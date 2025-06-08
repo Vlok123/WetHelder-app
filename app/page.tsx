@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Scale, MessageSquare, Search, Shield, Zap, Users, ArrowRight, CheckCircle } from 'lucide-react'
+import { Scale, MessageSquare, Shield, ArrowRight, CheckCircle, BookOpen } from 'lucide-react'
 
 export default function HomePage() {
   return (
@@ -16,7 +16,6 @@ export default function HomePage() {
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <Link href="#features" className="nav-link">Features</Link>
-              <Link href="#about" className="nav-link">Over Ons</Link>
               <Link href="#contact" className="nav-link">Contact</Link>
               <Link href="/auth/signin" className="btn btn-secondary">Inloggen</Link>
               <Link href="/auth/signup" className="btn btn-primary">Gratis Starten</Link>
@@ -31,8 +30,8 @@ export default function HomePage() {
           <div className="text-center">
             <div className="animate-slide-up">
               <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-8">
-                <Zap className="w-4 h-4 mr-2" />
-                AI-Powered Legal Assistant
+                <BookOpen className="w-4 h-4 mr-2" />
+                Nederlandse Juridische Hulp
               </div>
             </div>
             
@@ -42,7 +41,7 @@ export default function HomePage() {
             </h1>
             
             <p className="text-xl text-neutral-600 max-w-3xl mx-auto mb-10 animate-slide-up">
-              Krijg direct antwoord op juridische vragen, zoek door wetgeving, en controleer verkeersboetes. 
+              Krijg direct antwoord op juridische vragen en controleer verkeersboetes. 
               Alles in één gebruiksvriendelijke interface.
             </p>
             
@@ -50,9 +49,6 @@ export default function HomePage() {
               <Link href="/auth/signup" className="btn btn-primary text-lg px-8 py-3 shadow-elegant">
                 Start Gratis
                 <ArrowRight className="w-5 h-5 ml-2" />
-              </Link>
-              <Link href="#demo" className="btn btn-ghost text-lg px-8 py-3">
-                Bekijk Demo
               </Link>
             </div>
             
@@ -67,7 +63,7 @@ export default function HomePage() {
               </div>
               <div className="flex items-center">
                 <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                AI-powered
+                Gebruiksvriendelijk
               </div>
             </div>
           </div>
@@ -94,18 +90,18 @@ export default function HomePage() {
               Alles wat je nodig hebt
             </h2>
             <p className="text-xl text-neutral-600 max-w-2xl mx-auto">
-              Van AI-chat tot verkeersboetes - alle Nederlandse juridische informatie binnen handbereik.
+              Van juridische hulp tot verkeersboetes - Nederlandse juridische informatie binnen handbereik.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* AI Legal Assistant */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Chat Assistant */}
             <Link href="/chat" className="feature-card">
               <div className="feature-icon">
                 <MessageSquare className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-semibold text-neutral-900 mb-2">
-                AI Legal Assistant
+                Juridische Hulp
               </h3>
               <p className="text-neutral-600 mb-4">
                 Stel juridische vragen in gewoon Nederlands en krijg direct uitgebreide antwoorden gebaseerd op Nederlandse wetgeving.
@@ -129,23 +125,6 @@ export default function HomePage() {
               </p>
               <div className="flex items-center text-blue-600 font-medium">
                 Zoek Boetes
-                <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-
-            {/* Wetgeving Zoeken */}
-            <Link href="/wetgeving" className="feature-card">
-              <div className="feature-icon">
-                <Search className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-semibold text-neutral-900 mb-2">
-                Wetgeving Database
-              </h3>
-              <p className="text-neutral-600 mb-4">
-                Doorzoek de complete Nederlandse wetgeving en vind specifieke artikelen en regelgeving.
-              </p>
-              <div className="flex items-center text-blue-600 font-medium">
-                Zoek Wetten
                 <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
@@ -185,7 +164,7 @@ export default function HomePage() {
                 <span className="text-xl font-bold text-white">WetHelder</span>
               </div>
               <p className="text-neutral-400 max-w-md">
-                Nederlandse juridische informatie toegankelijk gemaakt door AI. 
+                Nederlandse juridische informatie toegankelijk gemaakt. 
                 Snel, betrouwbaar en gebruiksvriendelijk.
               </p>
             </div>
@@ -193,9 +172,8 @@ export default function HomePage() {
             <div>
               <h3 className="text-white font-semibold mb-4">Product</h3>
               <ul className="space-y-2">
-                <li><Link href="/chat" className="hover:text-white transition-colors">AI Assistant</Link></li>
+                <li><Link href="/chat" className="hover:text-white transition-colors">Juridische Hulp</Link></li>
                 <li><Link href="/boetes" className="hover:text-white transition-colors">Verkeersboetes</Link></li>
-                <li><Link href="/wetgeving" className="hover:text-white transition-colors">Wetgeving</Link></li>
               </ul>
             </div>
             
@@ -210,7 +188,7 @@ export default function HomePage() {
           </div>
           
           <div className="border-t border-neutral-800 mt-12 pt-8 text-center">
-            <p>&copy; 2024 WetHelder. Alle rechten voorbehouden.</p>
+            <p>© 2024 WetHelder. Alle rechten voorbehouden.</p>
           </div>
         </div>
       </footer>

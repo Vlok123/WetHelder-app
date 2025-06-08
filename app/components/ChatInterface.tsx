@@ -298,7 +298,7 @@ export default function ChatInterface() {
             </Link>
             <Link href="/chat" className="nav-link nav-link-active w-full justify-start">
               <MessageSquare className="w-4 h-4 mr-3" />
-              AI Assistant
+                              Juridische Hulp
             </Link>
             <Link href="/boetes" className="nav-link w-full justify-start">
               <Shield className="w-4 h-4 mr-3" />
@@ -386,7 +386,7 @@ export default function ChatInterface() {
               <Menu className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-lg font-semibold text-neutral-900">AI Legal Assistant</h1>
+                              <h1 className="text-lg font-semibold text-neutral-900">Juridische Hulp</h1>
               <p className="text-sm text-neutral-500">Stel al je juridische vragen</p>
             </div>
           </div>
@@ -412,7 +412,7 @@ export default function ChatInterface() {
                   <MessageSquare className="w-8 h-8 text-blue-600" />
                 </div>
                 <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-                  Welkom bij WetHelder AI
+                  Welkom bij WetHelder
                 </h3>
                 <p className="text-neutral-600 mb-6">
                   Stel een juridische vraag en krijg direct een uitgebreid antwoord 
@@ -429,7 +429,7 @@ export default function ChatInterface() {
                   </div>
                   <div className="flex items-center justify-center">
                     <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
-                    AI-powered antwoorden
+                                          Betrouwbare antwoorden
                   </div>
                 </div>
               </div>
@@ -526,7 +526,7 @@ export default function ChatInterface() {
               <Link href="/auth/signup" className="text-blue-600 hover:text-blue-700">
                 registreer
               </Link>{' '}
-              om de AI assistant te gebruiken
+              om de juridische hulp te gebruiken
             </p>
           )}
         </div>
