@@ -1,116 +1,132 @@
-# Nederlandse Juridische AI Assistent
+# 🏛️ WetHelder
 
-Een moderne web-applicatie die gebruikers helpt bij het opzoeken en begrijpen van Nederlandse wet- en regelgeving, gebaseerd op officiële bronnen.
+**Nederlandse juridische AI-assistent met verkeersbonnen zoekfunctionaliteit**
 
-## ✨ Kenmerken
+Een moderne web-applicatie die Nederlandse gebruikers helpt met juridische vragen en verkeersovertredingen door middel van AI-powered chat en gestructureerde zoekfunctionaliteit.
 
-- 🏛️ **Officiële bronnen**: Uitsluitend gebaseerd op wetten.overheid.nl en overheidsgedomineerde bronnen
-- 🤖 **AI-aangedreven**: Intelligente juridische interpretaties en antwoorden
-- 💬 **Chat-interface**: Intuïtieve conversatie-ervaring
-- 📱 **Responsive design**: Werkt op desktop en mobiel
-- ⚡ **Real-time antwoorden**: Snelle responstijden
-- 🔍 **Voorbeeldvragen**: Gemakkelijke start met veel gestelde vragen
-- 👔 **Beroepspecifiek**: Pas antwoorden aan op basis van uw beroep (advocaat, politie, etc.)
+## ✨ Features
 
-## 🚀 Installatie
+### 🤖 **AI Chat Assistent**
+- Intelligente conversaties over Nederlandse wetgeving
+- Contextbewuste antwoorden met juridische referenties
+- Geïntegreerd met DeepSeek AI voor accurate informatie
 
-1. **Clone de repository:**
+### 🚗 **Verkeersbonnen Database**
+- Zoek in uitgebreide database van verkeersovertredingen
+- Filter op categorie, bedrag en artikelnummer
+- Real-time zoekresultaten met gedetailleerde informatie
+
+### 👤 **Gebruikersbeheer**
+- Beveiligde authenticatie met NextAuth.js
+- Persoonlijke chat geschiedenis
+- Admin dashboard voor beheer
+
+### 🎨 **Modern UI/UX**
+- Responsive design met Tailwind CSS
+- Dark/light mode ondersteuning
+- Intuïtieve gebruikersinterface
+
+## 🚀 Tech Stack
+
+- **Frontend:** Next.js 14, React, TypeScript
+- **Styling:** Tailwind CSS, Lucide Icons
+- **Database:** PostgreSQL (Neon), Prisma ORM
+- **Authentication:** NextAuth.js
+- **AI:** DeepSeek API
+- **Deployment:** Netlify
+
+## 🛠️ Installation
+
+### Prerequisites
+- Node.js 18+
+- PostgreSQL database (Neon recommended)
+- DeepSeek API key
+
+### Setup
+
+1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd wet-app
+   git clone https://github.com/jouwgebruikersnaam/WetHelder-app.git
+   cd WetHelder-app
    ```
 
-2. **Installeer dependencies:**
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-3. **Start de development server:**
+3. **Environment variables**
+   Create `.env.local`:
+   ```bash
+   DATABASE_URL="postgresql://user:pass@host:5432/db?sslmode=require"
+   NEXTAUTH_URL="http://localhost:3000"
+   NEXTAUTH_SECRET="your-secret-key"
+   DEEPSEEK_API_KEY="your-deepseek-api-key"
+   ```
+
+4. **Database setup**
+   ```bash
+   npx prisma db push
+   npx prisma generate
+   ```
+
+5. **Start development server**
    ```bash
    npm run dev
    ```
 
-4. **Open in browser:**
-   Open [http://localhost:3000](http://localhost:3000) in uw browser.
+## 📝 Usage
 
-## 🔧 Configuratie
+### Chat Interface
+1. Navigate to the main page
+2. Start typing your legal question
+3. Receive AI-powered responses with references
 
-### Environment Variables
+### Verkeersbonnen Search
+1. Go to `/boetes`
+2. Search by keyword, category, or amount
+3. View detailed information about traffic violations
 
-Maak een `.env.local` bestand in de root directory:
+## 🏗️ Project Structure
 
-```env
-DEEPSEEK_API_KEY=your-api-key-here
+```
+├── app/
+│   ├── api/           # API routes
+│   ├── auth/          # Authentication pages
+│   ├── boetes/        # Traffic violations search
+│   ├── components/    # React components
+│   └── globals.css    # Global styles
+├── prisma/
+│   └── schema.prisma  # Database schema
+├── public/            # Static assets
+└── netlify.toml       # Netlify configuration
 ```
 
-## 📚 Gebruik
+## 🌐 Deployment
 
-1. **Start een conversatie**: Type uw juridische vraag in het invoerveld
-2. **Voorbeeldvragen**: Klik op een van de voorgestelde vragen om te beginnen
-3. **Officiële bronnen**: Alle antwoorden zijn gebaseerd op officiële Nederlandse wetgeving
-4. **Links**: Directe links naar relevante wetsartikelen op wetten.overheid.nl
+### Netlify Deployment
+1. Connect GitHub repository to Netlify
+2. Configure environment variables in Netlify dashboard
+3. Deploy automatically on push to main branch
 
-### Voorbeeldvragen
+Build settings are preconfigured in `netlify.toml`.
 
-- "Wat staat er in artikel 5 van de Wegenverkeerswet?"
-- "Mag een BOA geweld gebruiken volgens de wet?"
-- "Wat zijn de eisen voor een bestuurlijke boete volgens de Awb?"
-- "Welke bevoegdheden heeft de politie bij een aanhouding?"
+## 🤝 Contributing
 
-## 🛠️ Technische Details
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
 
-### Tech Stack
+## 📄 License
 
-- **Frontend**: Next.js 14, React 18, TypeScript
-- **Styling**: Tailwind CSS
-- **Icons**: Lucide React
-- **AI**: Advanced Language Model API
-- **Deployment**: Vercel-ready
+This project is licensed under the MIT License.
 
-### API Configuratie
+## 👨‍💻 Author
 
-De applicatie gebruikt de volgende AI API instellingen:
-- **Temperature**: 0.2 (voor juridische nauwkeurigheid)
-- **Max tokens**: 2048
-- **Context**: Volledige conversatiegeschiedenis
-- **Beroepspecifiek**: Aangepaste prompts per beroepsgroep
+Created with ❤️ for the Dutch legal community
 
-### Systeemprompt
+---
 
-De AI gebruikt een gespecialiseerde prompt die:
-- Alleen officiële bronnen gebruikt
-- Juridische professionaliteit hanteert
-- Nederlandse wetgeving prioriteert
-- Bronverwijzingen toevoegt
-- Twijfels expliciet vermeldt
-
-## 🔒 Veiligheid en Betrouwbaarheid
-
-- ✅ Alleen officiële overheid.nl bronnen
-- ✅ Transparante bronverwijzingen
-- ✅ Expliciete disclaimers bij onzekerheid
-- ❌ Geen interpretaties van forums of blogs
-- ❌ Geen niet-geverifieerde juridische adviezen
-
-## 📝 Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build productie-versie
-- `npm run start` - Start productie server
-- `npm run lint` - Run ESLint
-
-## 🤝 Bijdragen
-
-Bijdragen zijn welkom! Open een issue of pull request voor:
-- Bug-fixes
-- Nieuwe features
-- Documentatie-verbeteringen
-- UI/UX-verbeteringen
-
-## ⚖️ Disclaimer
-
-Deze applicatie is bedoeld voor informatieve doeleinden. Voor juridisch advies dient u altijd een gekwalificeerde jurist te raadplegen.
-
-## 📄 Licentie
-
-MIT License - zie LICENSE bestand voor details. 
+**Status:** 🟢 Production Ready | **Database:** 🟢 Connected | **AI:** 🟢 Functional 
