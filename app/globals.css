@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-legal-50 text-legal-900;
+  }
+}
+
+@layer components {
+  .chat-message {
+    @apply mb-6 p-5 rounded-xl shadow-sm;
+  }
+  
+  .user-message {
+    @apply bg-gradient-to-r from-primary-100 to-primary-50 ml-8 border border-blue-200;
+  }
+  
+  .assistant-message {
+    @apply bg-white mr-8 border border-legal-200;
+  }
+  
+  .law-reference {
+    @apply bg-legal-50 border-l-4 border-primary-500 rounded-r-lg shadow-sm;
+  }
+  
+  /* Enhanced formatting for structured content */
+  .assistant-message h2 {
+    @apply text-xl font-bold text-legal-800 mt-5 mb-3 border-b-2 border-primary-500 pb-2;
+  }
+  
+  .assistant-message h3 {
+    @apply text-lg font-semibold text-legal-800 mt-4 mb-2 border-b border-legal-200 pb-1;
+  }
+  
+  .assistant-message ul {
+    @apply my-3 space-y-1 pl-4;
+  }
+  
+  .assistant-message li {
+    @apply text-legal-800 leading-relaxed;
+  }
+  
+  .assistant-message p {
+    @apply mb-3 text-legal-800 leading-relaxed;
+  }
+  
+  .assistant-message strong {
+    @apply font-semibold text-legal-900;
+  }
+  
+  .assistant-message em {
+    @apply italic text-legal-700;
+  }
+  
+  /* Law reference styling */
+  .law-reference {
+    @apply my-3 p-3 bg-legal-50 border-l-4 border-primary-500 rounded-r-lg;
+  }
+  
+  .law-reference strong {
+    @apply text-primary-700;
+  }
+  
+  /* Formatted content styling */
+  .formatted-content {
+    @apply text-base leading-relaxed;
+  }
+  
+  .formatted-content h2 {
+    @apply text-xl font-bold text-legal-800 mt-6 mb-4 border-b-2 border-primary-500 pb-2 first:mt-0;
+  }
+  
+  .formatted-content h3 {
+    @apply text-lg font-semibold text-legal-800 mt-5 mb-3 border-b border-legal-200 pb-1 first:mt-0;
+  }
+  
+  .formatted-content p {
+    @apply mb-4 text-legal-800 leading-relaxed first:mt-0 last:mb-0;
+  }
+  
+  .formatted-content ul {
+    @apply my-4 space-y-2 first:mt-0 last:mb-0;
+  }
+  
+  .formatted-content li {
+    @apply text-legal-800 leading-relaxed;
+  }
+  
+  .formatted-content strong {
+    @apply font-semibold text-legal-900;
+  }
+  
+  .formatted-content em {
+    @apply italic text-legal-700;
+  }
+  
+  .formatted-content .law-reference {
+    @apply my-4 p-4 bg-gradient-to-r from-legal-50 to-primary-50 border-l-4 border-primary-500 rounded-r-lg shadow-sm;
+  }
+  
+  .formatted-content a {
+    @apply text-primary-600 hover:text-primary-800 underline font-medium transition-colors;
+  }
+} 
