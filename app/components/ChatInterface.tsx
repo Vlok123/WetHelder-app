@@ -1,14 +1,15 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { Send, Scale, AlertCircle, ExternalLink, User, Briefcase, Shield, Gavel, FileText, LogOut, History, BarChart3, MessageSquare } from 'lucide-react'
+import { Send, Scale, AlertCircle, ExternalLink, User, Briefcase, Shield, Gavel, FileText, LogOut, History, BarChart3, MessageSquare, Menu, X, Plus, Home, Search, Loader2, Trash2, Edit3 } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
 import ChatSidebar from './ChatSidebar'
 
 interface Message {
-  role: 'user' | 'assistant'
+  id: string
   content: string
+  role: 'user' | 'assistant' | 'system'
   timestamp: Date
 }
 
@@ -17,6 +18,13 @@ interface Profession {
   name: string
   icon: React.ComponentType<any>
   description: string
+}
+
+interface Conversation {
+  id: string
+  title: string
+  messages: Message[]
+  lastMessage: Date
 }
 
 const PROFESSIONS: Profession[] = [
@@ -71,7 +79,10 @@ export default function ChatInterface() {
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
   const [guestMessageCount, setGuestMessageCount] = useState(0)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [conversations, setConversations] = useState<Conversation[]>([])
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -80,6 +91,12 @@ export default function ChatInterface() {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  useEffect(() => {
+    if (session) {
+      loadConversations()
+    }
+  }, [session])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -92,761 +109,436 @@ export default function ChatInterface() {
     return () => document.removeEventListener('click', handleClickOutside)
   }, [showProfessionSelector])
 
+  const loadConversations = async () => {
+    try {
+      const response = await fetch('/api/conversations')
+      if (response.ok) {
+        const data = await response.json()
+        setConversations(data)
+      }
+    } catch (error) {
+      console.error('Error loading conversations:', error)
+    }
+  }
+
+  const createNewConversation = () => {
+    setMessages([])
+    setCurrentConversationId(null)
+    setSidebarOpen(false)
+  }
+
+  const loadConversation = (conversation: Conversation) => {
+    setMessages(conversation.messages)
+    setCurrentConversationId(conversation.id)
+    setSidebarOpen(false)
+  }
+
+  const deleteConversation = async (conversationId: string) => {
+    try {
+      const response = await fetch(`/api/conversations/${conversationId}`, {
+        method: 'DELETE',
+      })
+      if (response.ok) {
+        setConversations(prev => prev.filter(c => c.id !== conversationId))
+        if (currentConversationId === conversationId) {
+          setMessages([])
+          setCurrentConversationId(null)
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting conversation:', error)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!inputValue.trim() || isLoading) return
 
-    // Temporarily unlimited for all users
-    // if (!session && guestMessageCount >= 1) {
-    //   setError('Je hebt het maximum aantal gratis berichten bereikt. Maak een account aan om verder te chatten en je gesprekken op te slaan.')
-    //   return
-    // }
-
     const userMessage: Message = {
-      role: 'user',
+      id: Date.now().toString(),
       content: inputValue.trim(),
+      role: 'user',
       timestamp: new Date()
     }
 
     setMessages(prev => [...prev, userMessage])
-    const messageContent = inputValue.trim()
     setInputValue('')
     setIsLoading(true)
-    setError(null)
-
-    // Increment guest message count
-    if (!session) {
-      setGuestMessageCount(prev => prev + 1)
-    }
 
     try {
-      // Create conversation if logged in and no current conversation
-      let conversationId = currentConversationId
-      if (session && !conversationId) {
-        const convResponse = await fetch('/api/conversations', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'create',
-            title: messageContent.slice(0, 50) + (messageContent.length > 50 ? '...' : '')
-          })
-        })
-
-        if (convResponse.ok) {
-          const convData = await convResponse.json()
-          conversationId = convData.conversation.id
-          setCurrentConversationId(conversationId)
-        }
-      }
-
-      // Save user message if logged in
-      if (session && conversationId) {
-        await fetch('/api/conversations', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'save_message',
-            conversationId,
-            message: messageContent,
-            role: 'user'
-          })
-        })
-      }
-
-      const conversationHistory = messages.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }))
-
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: messageContent,
-          conversationHistory,
-          profession: (session?.user as any)?.profession || selectedProfession
+          message: userMessage.content,
+          conversationId: currentConversationId,
+          messages: [...messages, userMessage]
         }),
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Er is een fout opgetreden')
+        throw new Error('Failed to get response')
       }
 
       const data = await response.json()
       
       const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: data.response,
         role: 'assistant',
-        content: data.message,
         timestamp: new Date()
       }
 
       setMessages(prev => [...prev, assistantMessage])
-
-      // Save assistant message if logged in
-      if (session && conversationId) {
-        await fetch('/api/conversations', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'save_message',
-            conversationId,
-            message: data.message,
-            role: 'assistant'
-          })
-        })
+      
+      if (data.conversationId) {
+        setCurrentConversationId(data.conversationId)
+        loadConversations()
       }
 
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Er is een onbekende fout opgetreden')
+    } catch (error) {
+      console.error('Error:', error)
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: 'Er is een fout opgetreden. Probeer het opnieuw.',
+        role: 'system',
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleExampleQuestion = (question: string) => {
-    setInputValue(question)
+  const adjustTextareaHeight = () => {
+    const textarea = textareaRef.current
+    if (textarea) {
+      textarea.style.height = 'auto'
+      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px'
+    }
   }
 
-  const handleConversationSelect = (conversationId: string, conversationMessages: any[]) => {
-    setCurrentConversationId(conversationId)
-    setMessages(conversationMessages)
-    setError(null)
-  }
-
-  const handleNewConversation = () => {
-    setCurrentConversationId(null)
-    setMessages([])
-    setError(null)
-    setInputValue('')
-  }
-
-  const handleToggleSidebar = () => {
-    setSidebarCollapsed(!sidebarCollapsed)
-  }
-
-  const formatMessage = (content: string) => {
-    // Enhanced formatting for better structure and readability
+  const formatMessage = (content: string): string => {
+    // Enhanced formatting for better readability
     let formatted = content
-      // Format links with external link icon
-      .replace(/https?:\/\/[^\s]+/g, (url) => 
-        `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1 font-medium">
-          ${url} <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-        </a>`
-      )
-      // Format headers (### Header or **Header:**)
-      .replace(/^### (.*$)/gm, '<h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2 border-b border-gray-200 pb-1">$1</h3>')
-      .replace(/^## (.*$)/gm, '<h2 class="text-xl font-bold text-gray-800 mt-5 mb-3 border-b-2 border-blue-500 pb-2">$1</h2>')
-      // Format bold text and article references
-      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em class="italic text-gray-700">$1</em>')
-      // Format article references (Artikel X van de Wet)
-      .replace(/(Artikel \d+[a-z]*(?:\s+lid \d+)?(?:\s+sub [a-z])?(?:\s+onder [a-z0-9]+)?)\s+(van de|uit de|in de)\s+([A-Z][^.]*?)(?=[\.\,\;\:]|$)/g, 
-        '<div class="law-reference my-3 p-3 bg-gray-50 border-l-4 border-blue-500 rounded-r-lg"><strong class="text-blue-700">$1</strong> <span class="text-gray-600">$2</span> <strong class="text-gray-800">$3</strong></div>')
-      // Format law names in parentheses
-      .replace(/\(([A-Z][a-zA-Z\s]+wet[a-zA-Z\s]*|AWB|WVW|Sr|Sv|BW)\)/g, '<span class="bg-gray-100 px-2 py-1 rounded text-sm font-medium text-gray-700">($1)</span>')
-      // Format lists with bullets
-      .replace(/^[\*\-\•]\s+(.*$)/gm, '<li class="ml-4 mb-1 text-gray-800">• $1</li>')
-      // Format numbered lists
-      .replace(/^\d+\.\s+(.*$)/gm, '<li class="ml-4 mb-1 text-gray-800 list-decimal">$1</li>')
-      
-    // Wrap consecutive list items in ul tags
-    formatted = formatted.replace(/((?:<li[^>]*>.*?<\/li>\s*)+)/g, '<ul class="my-2 space-y-1">$1</ul>')
-    
-    // Format paragraphs
-    formatted = formatted
-      .split('\n\n')
-      .map(paragraph => {
-        paragraph = paragraph.trim()
-        if (!paragraph) return ''
-        
-        // Skip if already formatted as header, list, or law reference
-        if (paragraph.startsWith('<h') || paragraph.startsWith('<ul') || paragraph.startsWith('<div class="law-reference')) {
-          return paragraph
-        }
-        
-        return `<p class="mb-3 text-gray-800 leading-relaxed">${paragraph}</p>`
-      })
-      .join('')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br>')
 
+    // Handle numbered lists
+    formatted = formatted.replace(/(\d+)\.\s/g, '<br><strong>$1.</strong> ')
+    
+    // Handle bullet points
+    formatted = formatted.replace(/[-•]\s/g, '<br>• ')
+    
+    // Wrap in paragraph tags
+    formatted = `<p>${formatted}</p>`
+    
+    // Handle law references
+    formatted = formatted.replace(
+      /(Artikel \d+[a-z]?|Art\. \d+[a-z]?|§ \d+)/gi,
+      '<span class="font-semibold text-blue-700 bg-blue-50 px-1 rounded">$1</span>'
+    )
+    
     return formatted
   }
 
+  if (status === 'loading') {
+    return (
+      <div className="chat-container">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+            <p className="text-neutral-600">Laden...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="chat-container">
       {/* Sidebar */}
-      {session && (
-        <ChatSidebar
-          onConversationSelect={handleConversationSelect}
-          onNewConversation={handleNewConversation}
-          currentConversationId={currentConversationId}
-          isCollapsed={sidebarCollapsed}
-          onToggleCollapse={handleToggleSidebar}
-        />
-      )}
-
-      {/* Main Content */}
-      <div className="flex flex-col flex-1 max-w-4xl mx-auto">
-        {/* Free Access Banner */}
-        <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white text-center py-2 px-4">
-          <p className="text-sm font-medium">
-            🎉 <strong>WetHelder is tijdelijk geheel gratis!</strong> Onbeperkt vragen stellen voor iedereen.
-          </p>
-        </div>
-      
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Scale className="w-8 h-8 text-blue-600" />
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Nederlandse Juridische Assistent
-              </h1>
-              <p className="text-gray-600 text-sm">
-                Gebaseerd op officiële Nederlandse bronnen zoals wetten.overheid.nl
-              </p>
+      <div className={`chat-sidebar ${sidebarOpen ? 'open' : ''}`}>
+        {/* Sidebar Header */}
+        <div className="p-4 border-b border-neutral-200">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <Scale className="w-5 h-5 text-white" />
+              </div>
+              <span className="font-bold text-gradient">WetHelder</span>
             </div>
-          </div>
-          
-          {/* Quick Navigation */}
-          <div className="flex items-center gap-3">
-            <Link
-              href="/boetes"
-              className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5 text-sm font-medium"
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="md:hidden btn btn-ghost p-2"
             >
-              <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              Verkeersbonnen
-              <span className="text-blue-100 text-xs">→</span>
-            </Link>
-            
-
-            
-            <div className="h-4 w-px bg-gray-300"></div>
-            
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
-                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                Live
-              </span>
-              <span>24/7 beschikbaar</span>
-            </div>
+              <X className="w-5 h-5" />
+            </button>
           </div>
           
-          <div className="flex items-center gap-3">
-            {/* User Authentication */}
-            {status === 'loading' ? (
-              <div className="animate-pulse bg-gray-200 h-10 w-32 rounded-lg"></div>
-            ) : session ? (
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-700">{session.user?.name}</p>
-                  <p className="text-xs text-gray-500">{session.user?.email}</p>
-                </div>
-                {/* Admin Dashboard Link - only for admin emails */}
-                {(session.user?.email === 'admin@example.com' || session.user?.email === 'your-email@domain.com' || session.user?.email === 'sanderhelmink@gmail.com') && (
-                  <Link
-                    href="/admin"
-                    className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors text-blue-700"
-                  >
-                    <BarChart3 className="w-4 h-4" />
-                    <span>Admin</span>
-                  </Link>
-                )}
-                <button
-                  onClick={() => signOut()}
-                  className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Uitloggen</span>
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Link
-                  href="/auth/signin"
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                >
-                  Inloggen
-                </Link>
-                <Link
-                  href="/auth/signup"
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-                >
-                  Registreren
-                </Link>
-              </div>
-            )}
-            
-            {/* Profession Selector - only for logged in users */}
-            {session && (
-              <div className="relative">
-                <button
-                  onClick={() => setShowProfessionSelector(!showProfessionSelector)}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                >
-                  {React.createElement(PROFESSIONS.find(p => p.id === selectedProfession)?.icon || User, {
-                    className: "w-4 h-4 text-blue-600"
-                  })}
-                  <span className="text-sm font-medium text-gray-700">
-                    {PROFESSIONS.find(p => p.id === selectedProfession)?.name}
-                  </span>
-                </button>
-                
-                {showProfessionSelector && (
-                  <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                    <div className="p-3 border-b border-gray-200">
-                      <h3 className="font-medium text-gray-900">Selecteer uw beroep</h3>
-                      <p className="text-xs text-gray-600 mt-1">Voor op maat gemaakte juridische antwoorden</p>
-                    </div>
-                    <div className="p-2">
-                      {PROFESSIONS.map((profession) => (
-                        <button
-                          key={profession.id}
-                          onClick={() => {
-                            setSelectedProfession(profession.id)
-                            setShowProfessionSelector(false)
-                          }}
-                          className={`w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors ${
-                            selectedProfession === profession.id ? 'bg-blue-50 border border-blue-200' : ''
-                          }`}
-                        >
-                          {React.createElement(profession.icon, {
-                            className: `w-5 h-5 ${selectedProfession === profession.id ? 'text-blue-600' : 'text-gray-500'}`
-                          })}
-                          <div className="text-left">
-                            <div className={`font-medium text-sm ${
-                              selectedProfession === profession.id ? 'text-blue-700' : 'text-gray-700'
-                            }`}>
-                              {profession.name}
-                            </div>
-                            <div className="text-xs text-gray-600">{profession.description}</div>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          <button
+            onClick={createNewConversation}
+            className="btn btn-primary w-full"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Nieuwe Chat
+          </button>
         </div>
-      </header>
 
-      {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 && (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Scale className="w-8 h-8 text-blue-600" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              WetHelder
-            </h1>
-            <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-              {session ? `Welkom terug, ${session.user?.name?.split(' ')[0]}!` : 'Welkom bij WetHelder'}
-              <br />
-              Uw Nederlandse juridische assistent voor wet- en regelgeving op basis van officiële bronnen zoals wetten.overheid.nl
-            </p>
-            
-            {!session && (
-              <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg max-w-lg mx-auto">
-                <p className="text-sm text-green-700 mb-3">
-                  🎉 <strong>Tijdelijk geheel gratis!</strong> WetHelder is nu volledig gratis te gebruiken. Maak een account aan voor aangepaste antwoorden als <strong>Algemeen publiek, Advocaat, Politieagent, Rechter/Jurist of Ambtenaar</strong> + gesprekgeschiedenis.
-                </p>
-                <div className="flex gap-2 justify-center">
-                  <Link
-                    href="/auth/signup"
-                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
-                  >
-                    Account Aanmaken
-                  </Link>
-                  <Link
-                    href="/auth/signin"
-                    className="px-4 py-2 text-sm font-medium text-green-700 bg-white border border-green-300 hover:bg-green-50 rounded-lg transition-colors"
-                  >
-                    Inloggen
-                  </Link>
-                </div>
-              </div>
-            )}
-            
-            {session && (
-              <div className="mb-6 flex flex-col items-center gap-3">
-                <span className="text-sm text-gray-600">Uw profiel bepaalt welke vragen en antwoorden u krijgt:</span>
-                <div className="relative">
+        {/* Navigation Links */}
+        <div className="p-4 border-b border-neutral-200">
+          <nav className="space-y-1">
+            <Link href="/" className="nav-link w-full justify-start">
+              <Home className="w-4 h-4 mr-3" />
+              Home
+            </Link>
+            <Link href="/chat" className="nav-link nav-link-active w-full justify-start">
+              <MessageSquare className="w-4 h-4 mr-3" />
+              AI Assistant
+            </Link>
+            <Link href="/boetes" className="nav-link w-full justify-start">
+              <Shield className="w-4 h-4 mr-3" />
+              Verkeersboetes
+            </Link>
+            <Link href="/wetgeving" className="nav-link w-full justify-start">
+              <Search className="w-4 h-4 mr-3" />
+              Wetgeving
+            </Link>
+          </nav>
+        </div>
+
+        {/* Conversations List */}
+        <div className="flex-1 overflow-y-auto p-4">
+          <h3 className="text-sm font-medium text-neutral-500 mb-3">Recente Gesprekken</h3>
+          <div className="space-y-2">
+            {conversations.map((conversation) => (
+              <div
+                key={conversation.id}
+                className={`group relative p-3 rounded-lg cursor-pointer transition-colors ${
+                  currentConversationId === conversation.id
+                    ? 'bg-blue-50 border border-blue-200'
+                    : 'hover:bg-neutral-50'
+                }`}
+                onClick={() => loadConversation(conversation)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-neutral-900 truncate">
+                      {conversation.title}
+                    </p>
+                    <p className="text-xs text-neutral-500 mt-1">
+                      {conversation.lastMessage.toLocaleDateString()}
+                    </p>
+                  </div>
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
-                      setShowProfessionSelector(!showProfessionSelector)
+                      deleteConversation(conversation.id)
                     }}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors"
+                    className="opacity-0 group-hover:opacity-100 btn btn-ghost p-1 text-red-600 hover:text-red-700"
                   >
-                    {React.createElement(PROFESSIONS.find(p => p.id === selectedProfession)?.icon || User, {
-                      className: "w-5 h-5 text-blue-600"
-                    })}
-                    <span className="font-medium text-blue-700">
-                      {PROFESSIONS.find(p => p.id === selectedProfession)?.name}
-                    </span>
-                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+                    <Trash2 className="w-4 h-4" />
                   </button>
-                  
-                  {showProfessionSelector && (
-                    <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                      <div className="p-3 border-b border-gray-200">
-                        <h3 className="font-medium text-gray-900">Kies uw profiel</h3>
-                        <p className="text-xs text-gray-600 mt-1">Dit bepaalt welke vragen en antwoorden u krijgt</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* User Menu */}
+        {session && (
+          <div className="p-4 border-t border-neutral-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <User className="w-4 h-4 text-blue-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-neutral-900 truncate">
+                    {session.user?.name || session.user?.email}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => signOut()}
+                className="btn btn-ghost p-2 text-neutral-600 hover:text-red-600"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Main Chat Area */}
+      <div className="chat-main">
+        {/* Header */}
+        <div className="chat-header">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden btn btn-ghost p-2"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div>
+              <h1 className="text-lg font-semibold text-neutral-900">AI Legal Assistant</h1>
+              <p className="text-sm text-neutral-500">Stel al je juridische vragen</p>
+            </div>
+          </div>
+          
+          {!session && (
+            <div className="flex items-center space-x-3">
+              <Link href="/auth/signin" className="btn btn-secondary">
+                Inloggen
+              </Link>
+              <Link href="/auth/signup" className="btn btn-primary">
+                Registreren
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Messages */}
+        <div className="chat-messages">
+          {messages.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center max-w-md">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <MessageSquare className="w-8 h-8 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+                  Welkom bij WetHelder AI
+                </h3>
+                <p className="text-neutral-600 mb-6">
+                  Stel een juridische vraag en krijg direct een uitgebreid antwoord 
+                  gebaseerd op Nederlandse wetgeving.
+                </p>
+                <div className="space-y-2 text-sm text-neutral-500">
+                  <div className="flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    Gratis te gebruiken
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                    Nederlandse wetgeving
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
+                    AI-powered antwoorden
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {messages.map((message) => (
+                <div key={message.id} className="animate-slide-up">
+                  {message.role === 'user' && (
+                    <div className="flex justify-end">
+                      <div className="message-user">
+                        <p className="whitespace-pre-wrap">{message.content}</p>
                       </div>
-                      <div className="p-2">
-                        {PROFESSIONS.map((profession) => (
-                          <button
-                            key={profession.id}
-                            onClick={() => {
-                              setSelectedProfession(profession.id)
-                              setShowProfessionSelector(false)
-                            }}
-                            className={`w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors ${
-                              selectedProfession === profession.id ? 'bg-blue-50 border border-blue-200' : ''
-                            }`}
-                          >
-                            {React.createElement(profession.icon, {
-                              className: `w-5 h-5 ${selectedProfession === profession.id ? 'text-blue-600' : 'text-gray-500'}`
-                            })}
-                            <div className="text-left flex-1">
-                              <div className={`font-medium text-sm ${
-                                selectedProfession === profession.id ? 'text-blue-700' : 'text-gray-700'
-                              }`}>
-                                {profession.name}
-                              </div>
-                              <div className="text-xs text-gray-600">{profession.description}</div>
-                            </div>
-                            {selectedProfession === profession.id && (
-                              <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                            )}
-                          </button>
-                        ))}
+                    </div>
+                  )}
+                  
+                  {message.role === 'assistant' && (
+                    <div className="flex justify-start">
+                      <div className="message-assistant">
+                        <div className="prose prose-sm max-w-none">
+                          <div dangerouslySetInnerHTML={{ __html: formatMessage(message.content) }} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {message.role === 'system' && (
+                    <div className="flex justify-center">
+                      <div className="message-system">
+                        <p>{message.content}</p>
                       </div>
                     </div>
                   )}
                 </div>
-              </div>
-            )}
-            
-            <div className="space-y-6 max-w-4xl mx-auto">
-              {/* Quick Actions */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Juridische Vragen */}
-                <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-all">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <MessageSquare className="w-5 h-5 text-blue-600" />
-                    </div>
-                                       <div>
-                     <h3 className="font-semibold text-gray-900">
-                       Juridische Vragen
-                       <span className="text-xs font-normal text-blue-600 ml-2">
-                         ({PROFESSIONS.find(p => p.id === selectedProfession)?.name})
-                       </span>
-                     </h3>
-                     <p className="text-sm text-gray-600">
-                       {session 
-                         ? `Voorbeeldvragen afgestemd op uw profiel als ${PROFESSIONS.find(p => p.id === selectedProfession)?.name.toLowerCase()}`
-                         : 'Stel vragen over Nederlandse wet- en regelgeving'
-                       }
-                     </p>
-                   </div>
-                  </div>
-                                     <div className="grid grid-cols-1 gap-2">
-                     {EXAMPLE_QUESTIONS_BY_PROFESSION[selectedProfession as keyof typeof EXAMPLE_QUESTIONS_BY_PROFESSION].map((question: string, index: number) => (
-                       <button
-                         key={index}
-                         onClick={() => handleExampleQuestion(question)}
-                         className="p-3 text-left bg-gray-50 rounded-lg hover:bg-blue-50 hover:border-blue-200 border border-transparent transition-all text-sm group"
-                       >
-                         <span className="group-hover:text-blue-700">{question}</span>
-                         <span className="text-gray-400 group-hover:text-blue-500 ml-2">→</span>
-                       </button>
-                     ))}
-                  </div>
-                </div>
-
-                {/* Verkeersbonnen */}
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 hover:shadow-md transition-all">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-blue-900">Verkeersbonnen Database</h3>
-                      <p className="text-sm text-blue-700">Zoek boetebedragen en verkeersovertredingen</p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-3 mb-4">
-                    <div className="flex items-center gap-2 text-sm text-blue-800">
-                      <span className="text-blue-500">✓</span>
-                      <span>Officiële boetebedragen van het OM</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-blue-800">
-                      <span className="text-blue-500">✓</span>
-                      <span>Feitcodes en wettelijke basis</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-blue-800">
-                      <span className="text-blue-500">✓</span>
-                      <span>Zoek alle verkeersovertredingen</span>
-                    </div>
-                  </div>
-                  
-                  <Link
-                    href="/boetes"
-                    className="inline-flex items-center gap-2 w-full justify-center px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all font-medium shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    Zoek Verkeersovertredingen
-                    <span className="text-blue-100">→</span>
-                  </Link>
-                </div>
-              </div>
+              ))}
               
-              {/* Features */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 border-t border-gray-200">
-                {[
-                  { icon: '⚖️', label: 'Officiële Bronnen', desc: 'wetten.overheid.nl' },
-                  { icon: '🚗', label: 'Verkeersovertredingen', desc: 'Zoek alle boetes' },
-                  { icon: '💬', label: 'Chat Assistent', desc: '24/7 beschikbaar' },
-                  { icon: '📊', label: 'Actuele Bedragen', desc: 'Februari 2025' }
-                ].map((feature, index) => (
-                  <div key={index} className="text-center">
-                    <div className="text-2xl mb-2">{feature.icon}</div>
-                    <div className="font-medium text-gray-900 text-sm">{feature.label}</div>
-                    <div className="text-xs text-gray-600">{feature.desc}</div>
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="message-assistant">
+                    <div className="flex items-center space-x-2">
+                      <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                      <span className="text-neutral-600">WetHelder denkt na...</span>
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Free access banner */}
-        {!session && messages.length > 0 && (
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 max-w-2xl mx-auto">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <h3 className="font-medium text-green-900 mb-2">🎉 Tijdelijk geheel gratis!</h3>
-                <p className="text-sm text-green-700 mb-3">
-                  WetHelder is nu tijdelijk volledig gratis te gebruiken! Stel onbeperkt vragen. Maak een account aan voor aangepaste antwoorden op uw behoefte: <strong>Algemeen publiek, Advocaat, Politieagent, Rechter/Jurist of Ambtenaar</strong> + gesprekgeschiedenis.
-                </p>
-                <div className="flex gap-2">
-                  <Link
-                    href="/auth/signup"
-                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
-                  >
-                    Account Aanmaken
-                  </Link>
-                  <Link
-                    href="/auth/signin"
-                    className="px-4 py-2 text-sm font-medium text-green-700 bg-white border border-green-300 hover:bg-green-50 rounded-lg transition-colors"
-                  >
-                    Inloggen
-                  </Link>
                 </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`chat-message ${
-              message.role === 'user' ? 'user-message' : 'assistant-message'
-            }`}
-          >
-            <div className="flex items-start gap-3">
-              {message.role === 'assistant' && (
-                <Scale className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
               )}
-              <div className="flex-1">
-                                 <div className="flex items-center gap-2 mb-2">
-                   <span className="font-medium text-sm text-gray-700">
-                     {message.role === 'user' ? 'U' : 'WetHelder'}
-                   </span>
-                   <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                     {message.timestamp.toLocaleTimeString('nl-NL')}
-                   </span>
-                 </div>
-                 {message.role === 'assistant' ? (
-                   <div className="space-y-2">
-                     <div 
-                       className="formatted-content text-gray-800"
-                       dangerouslySetInnerHTML={{ __html: formatMessage(message.content) }}
-                     />
-                     <div className="text-xs text-gray-500 italic border-t border-gray-200 pt-3 mt-4 flex items-center gap-2">
-                       <span>⚖️</span>
-                       <span>Gebaseerd op officiële Nederlandse bronnen zoals wetten.overheid.nl</span>
-                     </div>
-                   </div>
-                 ) : (
-                   <div 
-                     className="text-gray-800 leading-relaxed font-medium"
-                     dangerouslySetInnerHTML={{ __html: formatMessage(message.content) }}
-                   />
-                 )}
-              </div>
             </div>
-          </div>
-        ))}
+          )}
+          <div ref={messagesEndRef} />
+        </div>
 
-        {isLoading && (
-          <div className="assistant-message chat-message">
-            <div className="flex items-start gap-3">
-              <Scale className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1 animate-pulse" />
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="font-medium text-sm text-gray-700">WetHelder</span>
-                </div>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                    </div>
-                    <span className="text-gray-600 text-sm font-medium">Zoeken in de Nederlandse wet- en regelgeving...</span>
-                  </div>
-                  
-                  <div className="bg-gradient-to-r from-blue-50 to-gray-50 rounded-lg p-4 border border-blue-200">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2 text-xs text-gray-600">
-                        <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                        <span className="font-medium">Analyseren van officiële bronnen</span>
-                      </div>
-                      <div className="text-xs text-gray-500 bg-white px-2 py-1 rounded">
-                        ⏱️ ~30 seconden
-                      </div>
-                    </div>
-                    <div className="text-xs text-gray-600 mb-2">
-                      📚 Bronnen: wetten.overheid.nl, officielebekendmakingen.nl
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-1">
-                      <div className="bg-blue-600 h-1 rounded-full animate-pulse" style={{width: '45%'}}></div>
-                    </div>
-                  </div>
-                  
-                  <div className="text-xs text-gray-500 italic flex items-center gap-1">
-                    <span>💡</span>
-                    <span>De verwerkingstijd is afhankelijk van de complexiteit van uw vraag</span>
-                  </div>
-                </div>
-              </div>
+        {/* Input Area */}
+        <div className="chat-input-area">
+          <form onSubmit={handleSubmit} className="flex items-end space-x-3">
+            <div className="flex-1 relative">
+              <textarea
+                ref={textareaRef}
+                value={inputValue}
+                onChange={(e) => {
+                  setInputValue(e.target.value)
+                  adjustTextareaHeight()
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSubmit(e)
+                  }
+                }}
+                placeholder={session ? "Stel een juridische vraag..." : "Log in om te chatten..."}
+                disabled={!session || isLoading}
+                className="input resize-none min-h-[44px] max-h-[120px] py-3 pr-12"
+                rows={1}
+              />
             </div>
-          </div>
-        )}
-
-        {error && (
-                      <div className={`${
-            error.includes('maximum aantal gratis berichten')
-              ? 'bg-green-50 border border-green-200'
-              : 'bg-red-50 border border-red-200'
-          } rounded-lg p-4`}>
-            <div className="flex items-start gap-3">
-              {error.includes('maximum aantal gratis berichten') ? (
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
+            <button
+              type="submit"
+              disabled={!inputValue.trim() || !session || isLoading}
+              className="btn btn-primary p-3 shrink-0"
+            >
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <Send className="w-5 h-5" />
               )}
-              <div className="flex-1">
-                <h3 className={`font-medium mb-2 ${
-                  error.includes('maximum aantal gratis berichten') ? 'text-green-900' : 'text-red-900'
-                }`}>
-                  {error.includes('maximum aantal gratis berichten') 
-                    ? '🎉 Volledig gratis te gebruiken!' 
-                    : 'Fout'
-                  }
-                </h3>
-                <p className={`text-sm mb-3 ${
-                  error.includes('maximum aantal gratis berichten') ? 'text-green-700' : 'text-red-700'
-                }`}>
-                  {error.includes('maximum aantal gratis berichten')
-                    ? 'WetHelder is tijdelijk geheel gratis! Er zou geen beperking moeten zijn. Probeer de pagina te verversen.'
-                    : error
-                  }
-                </p>
-                                 {error.includes('maximum aantal gratis berichten') && (
-                   <div className="flex gap-2">
-                     <Link
-                       href="/auth/signup"
-                       className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
-                     >
-                       Account Aanmaken
-                     </Link>
-                     <Link
-                       href="/auth/signin"
-                       className="px-4 py-2 text-sm font-medium text-green-700 bg-white border border-green-300 hover:bg-green-50 rounded-lg transition-colors"
-                     >
-                       Inloggen
-                     </Link>
-                   </div>
-                 )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input Form */}
-      <form onSubmit={handleSubmit} className="border-t border-gray-200 bg-white p-4">
-        <div className="flex gap-3">
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Stel uw juridische vraag..."
-            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            disabled={isLoading}
-          />
-          <button
-            type="submit"
-            disabled={!inputValue.trim() || isLoading}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-          >
-            <Send className="w-4 h-4" />
-            <span>Verstuur</span>
-          </button>
-        </div>
-        <div className="mt-2 space-y-2">
-          <p className="text-xs text-gray-500">
-            Alleen vragen over Nederlandse wet- en regelgeving worden beantwoord op basis van officiële bronnen.
-          </p>
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-2">
-            <p className="text-xs text-amber-800">
-              ⚠️ <strong>Privacy:</strong> Voer geen persoonlijke gegevens in zoals kentekens, BSN-nummers, namen of adressen.
+            </button>
+          </form>
+          
+          {!session && (
+            <p className="text-xs text-neutral-500 mt-2 text-center">
+              <Link href="/auth/signin" className="text-blue-600 hover:text-blue-700">
+                Log in
+              </Link>{' '}
+              of{' '}
+              <Link href="/auth/signup" className="text-blue-600 hover:text-blue-700">
+                registreer
+              </Link>{' '}
+              om de AI assistant te gebruiken
             </p>
-          </div>
+          )}
         </div>
-      </form>
       </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/20 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
     </div>
   )
 } 

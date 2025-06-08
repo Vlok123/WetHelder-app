@@ -2,109 +2,229 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Modern Design System - Inspired by ChatGPT, Stripe, Linear */
+
 @layer base {
   html {
-    font-family: system-ui, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   }
   
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-neutral-50 text-neutral-900 antialiased;
+  }
+  
+  * {
+    @apply border-neutral-200;
   }
 }
 
 @layer components {
-  .chat-message {
-    @apply mb-6 p-5 rounded-xl shadow-sm;
+  /* Navigation Components */
+  .nav-link {
+    @apply inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 hover:bg-neutral-100 hover:text-neutral-900;
   }
   
-  .user-message {
-    @apply bg-gradient-to-r from-blue-100 to-blue-50 ml-8 border border-blue-200;
+  .nav-link-active {
+    @apply bg-blue-50 text-blue-700 border border-blue-200;
   }
   
-  .assistant-message {
-    @apply bg-white mr-8 border border-gray-200;
+  /* Card Components */
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden;
   }
   
-  .law-reference {
-    @apply bg-gray-50 border-l-4 border-blue-500 rounded-r-lg shadow-sm;
+  .card-header {
+    @apply px-6 py-4 border-b border-neutral-200 bg-neutral-50/50;
   }
   
-  /* Enhanced formatting for structured content */
-  .assistant-message h2 {
-    @apply text-xl font-bold text-gray-800 mt-5 mb-3 border-b-2 border-blue-500 pb-2;
+  .card-content {
+    @apply p-6;
   }
   
-  .assistant-message h3 {
-    @apply text-lg font-semibold text-gray-800 mt-4 mb-2 border-b border-gray-200 pb-1;
+  /* Button System */
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   
-  .assistant-message ul {
-    @apply my-3 space-y-1 pl-4;
+  .btn-primary {
+    @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 shadow-sm;
   }
   
-  .assistant-message li {
-    @apply text-gray-800 leading-relaxed;
+  .btn-secondary {
+    @apply bg-neutral-100 text-neutral-900 hover:bg-neutral-200 focus:ring-neutral-500 border border-neutral-300;
   }
   
-  .assistant-message p {
-    @apply mb-3 text-gray-800 leading-relaxed;
+  .btn-ghost {
+    @apply text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 focus:ring-neutral-500;
   }
   
-  .assistant-message strong {
-    @apply font-semibold text-gray-900;
+  /* Input System */
+  .input {
+    @apply block w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm placeholder-neutral-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
   }
   
-  .assistant-message em {
-    @apply italic text-gray-700;
+  /* Chat Components */
+  .chat-container {
+    @apply flex h-screen bg-neutral-50;
   }
   
-  /* Law reference styling */
-  .law-reference {
-    @apply my-3 p-3 bg-gray-50 border-l-4 border-blue-500 rounded-r-lg;
+  .chat-sidebar {
+    @apply w-64 bg-white border-r border-neutral-200 flex flex-col;
   }
   
-  .law-reference strong {
-    @apply text-blue-700;
+  .chat-main {
+    @apply flex-1 flex flex-col;
   }
   
-  /* Formatted content styling */
-  .formatted-content {
-    @apply text-base leading-relaxed;
+  .chat-header {
+    @apply px-6 py-4 bg-white border-b border-neutral-200 flex items-center justify-between;
   }
   
-  .formatted-content h2 {
-    @apply text-xl font-bold text-gray-800 mt-6 mb-4 border-b-2 border-blue-500 pb-2 first:mt-0;
+  .chat-messages {
+    @apply flex-1 overflow-y-auto px-6 py-4 space-y-4;
   }
   
-  .formatted-content h3 {
-    @apply text-lg font-semibold text-gray-800 mt-5 mb-3 border-b border-gray-200 pb-1 first:mt-0;
+  .chat-input-area {
+    @apply border-t border-neutral-200 bg-white px-6 py-4;
   }
   
-  .formatted-content p {
-    @apply mb-4 text-gray-800 leading-relaxed first:mt-0 last:mb-0;
+  /* Message Bubbles */
+  .message-user {
+    @apply max-w-2xl ml-auto bg-blue-600 text-white rounded-2xl rounded-br-md px-4 py-3 shadow-sm;
   }
   
-  .formatted-content ul {
-    @apply my-4 space-y-2 first:mt-0 last:mb-0;
+  .message-assistant {
+    @apply max-w-2xl mr-auto bg-white text-neutral-900 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm border border-neutral-200;
   }
   
-  .formatted-content li {
-    @apply text-gray-800 leading-relaxed;
+  .message-system {
+    @apply max-w-lg mx-auto bg-amber-50 text-amber-800 rounded-lg px-3 py-2 text-sm border border-amber-200;
   }
   
-  .formatted-content strong {
-    @apply font-semibold text-gray-900;
+  /* Feature Cards */
+  .feature-card {
+    @apply relative bg-white rounded-xl p-6 shadow-sm border border-neutral-200 hover:shadow-md hover:border-neutral-300 transition-all duration-200 cursor-pointer;
   }
   
-  .formatted-content em {
-    @apply italic text-gray-700;
+  .feature-card:hover {
+    @apply transform -translate-y-1;
   }
   
-  .formatted-content .law-reference {
-    @apply my-4 p-4 bg-gradient-to-r from-gray-50 to-blue-50 border-l-4 border-blue-500 rounded-r-lg shadow-sm;
+  .feature-icon {
+    @apply w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors duration-200;
   }
   
-  .formatted-content a {
-    @apply text-blue-600 hover:text-blue-800 underline font-medium transition-colors;
+  /* Status Badges */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
   }
+  
+  .badge-success {
+    @apply bg-green-100 text-green-800;
+  }
+  
+  .badge-warning {
+    @apply bg-yellow-100 text-yellow-800;
+  }
+  
+  .badge-error {
+    @apply bg-red-100 text-red-800;
+  }
+  
+  .badge-info {
+    @apply bg-blue-100 text-blue-800;
+  }
+  
+  /* Loading States */
+  .loading-spinner {
+    @apply inline-block w-4 h-4 border-2 border-neutral-300 border-t-blue-600 rounded-full animate-spin;
+  }
+  
+  .loading-dots {
+    @apply flex space-x-1;
+  }
+  
+  .loading-dot {
+    @apply w-2 h-2 bg-neutral-400 rounded-full animate-pulse;
+  }
+  
+  /* Utilities */
+  .text-gradient {
+    @apply bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent;
+  }
+  
+  .shadow-elegant {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .shadow-elegant-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .chat-sidebar {
+      @apply w-full fixed inset-0 z-50 transform -translate-x-full transition-transform duration-300;
+    }
+    
+    .chat-sidebar.open {
+      @apply translate-x-0;
+    }
+    
+    .chat-main {
+      @apply w-full;
+    }
+  }
+}
+
+/* Smooth Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Focus States */
+*:focus-visible {
+  @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+}
+
+/* Animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
 } 
