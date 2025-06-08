@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { Send, Scale, AlertCircle, ExternalLink, User, Briefcase, Shield, Gavel, FileText, LogOut, History, BarChart3, MessageSquare, Menu, X, Plus, Home, Search, Loader2, Trash2, Edit3 } from 'lucide-react'
+import { Send, Scale, AlertCircle, ExternalLink, User, Briefcase, Shield, Gavel, FileText, LogOut, History, BarChart3, MessageSquare, Menu, X, Plus, Home, Search, Loader2, Trash2, Edit3, Crown, CheckCircle } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
 import ChatSidebar from './ChatSidebar'
@@ -37,16 +37,16 @@ const PROFESSIONS: Profession[] = [
 
 const EXAMPLE_QUESTIONS_BY_PROFESSION = {
   general: [
-    "Wat kost een boete voor 15 km/h te hard rijden?",
-    "Mag ik inhalen bij een doorgetrokken streep?",
-    "Wat zijn mijn rechten bij een politiecontrole?",
-    "Hoe lang duurt een rechtszaak gemiddeld?"
+    "Wat zijn mijn rechten bij ontslag?",
+    "Hoe werkt een huurcontract?",
+    "Wanneer mag ik een contract ontbinden?",
+    "Wat zijn de regels rond privacy?"
   ],
   lawyer: [
-    "Wat zijn de procedurevereisten voor artikel 8:69 Awb?",
-    "Hoe interpreteer ik artikel 6:162 BW in contractrecht?",
-    "Welke jurisprudentie geldt voor bestuursrechtelijke handhaving?",
-    "Wat zijn de vereisten voor een geldig cassatieberoep?"
+    "Hoe stel ik een dagvaarding op?",
+    "Wat zijn de termijnen voor hoger beroep?", 
+    "Hoe werkt het verschoningsrecht?",
+    "Welke proceskostenregeling geldt?"
   ],
   police: [
     "Welke bevoegdheden heb ik bij een aanhouding volgens de Sv?",
@@ -78,11 +78,22 @@ export default function ChatInterface() {
   const [showProfessionSelector, setShowProfessionSelector] = useState(false)
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
   const [guestMessageCount, setGuestMessageCount] = useState(0)
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Load guest message count from localStorage
+  useEffect(() => {
+    if (!session) {
+      const savedCount = localStorage.getItem('guestMessageCount')
+      if (savedCount) {
+        setGuestMessageCount(parseInt(savedCount))
+      }
+    }
+  }, [session])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -95,6 +106,9 @@ export default function ChatInterface() {
   useEffect(() => {
     if (session) {
       loadConversations()
+      // Clear guest count when logged in
+      setGuestMessageCount(0)
+      localStorage.removeItem('guestMessageCount')
     }
   }, [session])
 
@@ -154,6 +168,12 @@ export default function ChatInterface() {
     e.preventDefault()
     if (!inputValue.trim() || isLoading) return
 
+    // Check guest limit
+    if (!session && guestMessageCount >= 2) {
+      setShowLoginPrompt(true)
+      return
+    }
+
     const userMessage: Message = {
       id: Date.now().toString(),
       content: inputValue.trim(),
@@ -165,6 +185,13 @@ export default function ChatInterface() {
     setInputValue('')
     setIsLoading(true)
 
+    // Increment guest count if not logged in
+    if (!session) {
+      const newCount = guestMessageCount + 1
+      setGuestMessageCount(newCount)
+      localStorage.setItem('guestMessageCount', newCount.toString())
+    }
+
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -173,8 +200,9 @@ export default function ChatInterface() {
         },
         body: JSON.stringify({
           message: userMessage.content,
-          conversationId: currentConversationId,
-          messages: [...messages, userMessage]
+          conversationId: session ? currentConversationId : null,
+          messages: [...messages, userMessage],
+          isGuest: !session
         }),
       })
 
@@ -193,7 +221,7 @@ export default function ChatInterface() {
 
       setMessages(prev => [...prev, assistantMessage])
       
-      if (data.conversationId) {
+      if (session && data.conversationId) {
         setCurrentConversationId(data.conversationId)
         loadConversations()
       }
@@ -246,6 +274,137 @@ export default function ChatInterface() {
     return formatted
   }
 
+  // Guest welcome component
+  const GuestWelcome = () => (
+    <div className="text-center max-w-4xl mx-auto mb-8">
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-6 mb-6">
+        <div className="flex items-center justify-center mb-4">
+          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+            <Scale className="w-6 h-6 text-blue-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Welkom bij WetHelder</h1>
+        </div>
+        <p className="text-gray-600 mb-4">
+          Nederlandse Juridische Hulp - Test nu gratis met 2 vragen!
+        </p>
+        
+        {/* Guest status indicator */}
+        <div className="bg-white rounded-lg p-4 mb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <AlertCircle className="w-5 h-5 text-orange-500 mr-2" />
+              <span className="text-sm font-medium">Gast modus</span>
+            </div>
+            <div className="text-sm text-gray-500">
+              {2 - guestMessageCount} vragen over
+            </div>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+            <div 
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+              style={{ width: `${(guestMessageCount / 2) * 100}%` }}
+            ></div>
+          </div>
+        </div>
+
+        {/* Account benefits */}
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4">
+          <div className="flex items-center mb-2">
+            <Crown className="w-5 h-5 text-green-600 mr-2" />
+            <span className="font-semibold text-green-800">Voordelen van een account</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-green-700">
+            <div className="flex items-center">
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Onbeperkte vragen
+            </div>
+            <div className="flex items-center">
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Gespecialiseerde beroepsvragen
+            </div>
+            <div className="flex items-center">
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Gesprekgeschiedenis opslaan
+            </div>
+            <div className="flex items-center">
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Persoonlijke juridische tips
+            </div>
+          </div>
+          <div className="mt-3 flex gap-2">
+            <Link href="/auth/signup" className="btn-primary text-sm px-4 py-2">
+              Gratis Account Maken
+            </Link>
+            <Link href="/auth/signin" className="btn-secondary text-sm px-4 py-2">
+              Inloggen
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Example questions for guests */}
+      <div className="bg-white rounded-xl p-6 border border-gray-200">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900">Probeer bijvoorbeeld:</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {EXAMPLE_QUESTIONS_BY_PROFESSION.general.map((question, index) => (
+            <button
+              key={index}
+              onClick={() => setInputValue(question)}
+              className="text-left p-3 bg-gray-50 hover:bg-blue-50 rounded-lg border border-gray-200 hover:border-blue-300 transition-all duration-200 text-sm"
+            >
+              <MessageSquare className="w-4 h-4 inline mr-2 text-blue-600" />
+              {question}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+
+  // Login prompt modal
+  const LoginPrompt = () => (
+    showLoginPrompt && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-xl max-w-md w-full p-6">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Crown className="w-8 h-8 text-blue-600" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              Je hebt je gratis vragen gebruikt!
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Maak een gratis account aan voor onbeperkte toegang tot juridische hulp en extra functies.
+            </p>
+            
+            <div className="space-y-3">
+              <Link 
+                href="/auth/signup" 
+                className="w-full btn-primary py-3 text-center block"
+                onClick={() => setShowLoginPrompt(false)}
+              >
+                Gratis Account Maken
+              </Link>
+              <Link 
+                href="/auth/signin"
+                className="w-full btn-secondary py-3 text-center block"
+                onClick={() => setShowLoginPrompt(false)}
+              >
+                Al een account? Inloggen
+              </Link>
+              <button
+                onClick={() => setShowLoginPrompt(false)}
+                className="w-full text-gray-500 hover:text-gray-700 py-2"
+              >
+                Sluiten
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  )
+
   if (status === 'loading') {
     return (
       <div className="chat-container">
@@ -260,285 +419,340 @@ export default function ChatInterface() {
   }
 
   return (
-    <div className="chat-container">
-      {/* Sidebar */}
-      <div className={`chat-sidebar ${sidebarOpen ? 'open' : ''}`}>
-        {/* Sidebar Header */}
-        <div className="p-4 border-b border-neutral-200">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <Scale className="w-5 h-5 text-white" />
+    <div className="flex h-screen bg-neutral-50">
+      <LoginPrompt />
+      
+      {/* Sidebar - only show for logged in users */}
+      {session && (
+        <div className={`${sidebarOpen ? 'block' : 'hidden'} md:block transition-all duration-200 ${sidebarCollapsed ? 'w-16' : 'w-80'} bg-white border-r border-neutral-200 flex flex-col`}>
+          {/* Sidebar Header */}
+          <div className="flex items-center justify-between p-4 border-b border-neutral-200">
+            {!sidebarCollapsed && (
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                  <Scale className="w-5 h-5 text-white" />
+                </div>
+                <span className="font-semibold text-neutral-900">WetHelder</span>
               </div>
-              <span className="font-bold text-gradient">WetHelder</span>
-            </div>
+            )}
             <button
-              onClick={() => setSidebarOpen(false)}
-              className="md:hidden btn btn-ghost p-2"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
             >
-              <X className="w-5 h-5" />
+              <Menu className="w-4 h-4" />
             </button>
           </div>
-          
-          <button
-            onClick={createNewConversation}
-            className="btn btn-primary w-full"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Nieuwe Chat
-          </button>
-        </div>
 
-        {/* Navigation Links */}
-        <div className="p-4 border-b border-neutral-200">
-          <nav className="space-y-1">
-            <Link href="/" className="nav-link w-full justify-start">
-              <Home className="w-4 h-4 mr-3" />
-              Home
-            </Link>
-            <Link href="/chat" className="nav-link nav-link-active w-full justify-start">
-              <MessageSquare className="w-4 h-4 mr-3" />
-                              Juridische Hulp
-            </Link>
-            <Link href="/boetes" className="nav-link w-full justify-start">
-              <Shield className="w-4 h-4 mr-3" />
-              Verkeersboetes
-            </Link>
-            <Link href="/wetgeving" className="nav-link w-full justify-start">
-              <Search className="w-4 h-4 mr-3" />
-              Wetgeving
-            </Link>
-          </nav>
-        </div>
+          {/* New Conversation Button */}
+          <div className="p-4">
+            <button
+              onClick={createNewConversation}
+              className={`w-full ${sidebarCollapsed ? 'p-3' : 'px-4 py-3'} bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center transition-all duration-200`}
+            >
+              <Plus className="w-4 h-4" />
+              {!sidebarCollapsed && <span className="ml-2">Nieuw Gesprek</span>}
+            </button>
+          </div>
 
-        {/* Conversations List */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <h3 className="text-sm font-medium text-neutral-500 mb-3">Recente Gesprekken</h3>
-          <div className="space-y-2">
-            {conversations.map((conversation) => (
-              <div
-                key={conversation.id}
-                className={`group relative p-3 rounded-lg cursor-pointer transition-colors ${
-                  currentConversationId === conversation.id
-                    ? 'bg-blue-50 border border-blue-200'
-                    : 'hover:bg-neutral-50'
-                }`}
-                onClick={() => loadConversation(conversation)}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-neutral-900 truncate">
-                      {conversation.title}
-                    </p>
-                    <p className="text-xs text-neutral-500 mt-1">
-                      {conversation.lastMessage.toLocaleDateString()}
-                    </p>
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      deleteConversation(conversation.id)
-                    }}
-                    className="opacity-0 group-hover:opacity-100 btn btn-ghost p-1 text-red-600 hover:text-red-700"
+          {/* Conversations List */}
+          {!sidebarCollapsed && (
+            <div className="flex-1 overflow-y-auto p-4">
+              <h3 className="text-sm font-medium text-neutral-600 mb-3">Gesprekken</h3>
+              <div className="space-y-2">
+                {conversations.map((conversation) => (
+                  <div
+                    key={conversation.id}
+                    className={`group relative p-3 rounded-lg cursor-pointer transition-all duration-200 ${
+                      currentConversationId === conversation.id 
+                        ? 'bg-blue-50 border border-blue-200' 
+                        : 'hover:bg-neutral-50 border border-transparent'
+                    }`}
+                    onClick={() => loadConversation(conversation)}
                   >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-medium text-neutral-900 truncate">
+                          {conversation.title}
+                        </h4>
+                        <p className="text-xs text-neutral-600 mt-1">
+                          {new Date(conversation.lastMessage).toLocaleDateString('nl-NL')}
+                        </p>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          deleteConversation(conversation.id)
+                        }}
+                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 rounded transition-all duration-200"
+                      >
+                        <Trash2 className="w-3 h-3 text-red-600" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* User Menu */}
-        {session && (
-          <div className="p-4 border-t border-neutral-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-blue-600" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-neutral-900 truncate">
-                    {session.user?.name || session.user?.email}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => signOut()}
-                className="btn btn-ghost p-2 text-neutral-600 hover:text-red-600"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Main Chat Area */}
-      <div className="chat-main">
-        {/* Header */}
-        <div className="chat-header">
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="md:hidden btn btn-ghost p-2"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-            <div>
-                              <h1 className="text-lg font-semibold text-neutral-900">Juridische Hulp</h1>
-              <p className="text-sm text-neutral-500">Stel al je juridische vragen</p>
-            </div>
-          </div>
-          
-          {!session && (
-            <div className="flex items-center space-x-3">
-              <Link href="/auth/signin" className="btn btn-secondary">
-                Inloggen
-              </Link>
-              <Link href="/auth/signup" className="btn btn-primary">
-                Registreren
-              </Link>
             </div>
           )}
-        </div>
 
-        {/* Messages */}
-        <div className="chat-messages">
-          {messages.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center max-w-md">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MessageSquare className="w-8 h-8 text-blue-600" />
+          {/* User Menu */}
+          <div className="border-t border-neutral-200 p-4">
+            {!sidebarCollapsed ? (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-neutral-100 rounded-full flex items-center justify-center">
+                    <User className="w-4 h-4 text-neutral-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-neutral-900 truncate">
+                      {session.user?.email}
+                    </p>
+                  </div>
                 </div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-                  Welkom bij WetHelder
-                </h3>
-                <p className="text-neutral-600 mb-6">
-                  Stel een juridische vraag en krijg direct een uitgebreid antwoord 
-                  gebaseerd op Nederlandse wetgeving.
-                </p>
-                <div className="space-y-2 text-sm text-neutral-500">
-                  <div className="flex items-center justify-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    Gratis te gebruiken
+                <button
+                  onClick={() => signOut()}
+                  className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+                >
+                  <LogOut className="w-4 h-4 text-neutral-600" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => signOut()}
+                className="w-full p-3 hover:bg-neutral-100 rounded-lg transition-colors"
+              >
+                <LogOut className="w-4 h-4 text-neutral-600 mx-auto" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <header className="bg-white border-b border-neutral-200 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              {session && (
+                <button
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="md:hidden p-2 hover:bg-neutral-100 rounded-lg"
+                >
+                  <Menu className="w-5 h-5" />
+                </button>
+              )}
+              <h1 className="text-lg font-semibold text-neutral-900">
+                {session ? 'Juridische Hulp' : 'WetHelder - Gratis Proefversie'}
+              </h1>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Link href="/" className="nav-link">
+                <Home className="w-4 h-4 mr-2" />
+                Home
+              </Link>
+              
+              {!session ? (
+                <>
+                  <Link href="/auth/signin" className="btn-secondary text-sm">
+                    Inloggen
+                  </Link>
+                  <Link href="/auth/signup" className="btn-primary text-sm">
+                    Account Maken
+                  </Link>
+                </>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-neutral-600">
+                    {session.user?.email}
+                  </span>
+                  <button
+                    onClick={() => signOut()}
+                    className="btn-secondary text-sm"
+                  >
+                    <LogOut className="w-4 h-4 mr-1" />
+                    Uitloggen
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* Chat Area */}
+        <div className="flex-1 overflow-y-auto p-4">
+          {messages.length === 0 ? (
+            session ? (
+              // Logged in user welcome
+              <div className="text-center max-w-4xl mx-auto">
+                <div className="mb-8">
+                  <h1 className="text-2xl font-bold text-neutral-900 mb-2">
+                    Welkom terug bij WetHelder
+                  </h1>
+                  <p className="text-neutral-600">
+                    Stel je juridische vraag en krijg betrouwbare antwoorden
+                  </p>
+                </div>
+                
+                {/* Profession Selector */}
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold mb-4 text-neutral-900">
+                    Selecteer je beroep voor gespecialiseerde vragen:
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                    {PROFESSIONS.map((profession) => (
+                      <button
+                        key={profession.id}
+                        onClick={() => setSelectedProfession(profession.id)}
+                        className={`p-4 rounded-xl border transition-all duration-200 ${
+                          selectedProfession === profession.id
+                            ? 'border-blue-500 bg-blue-50 text-blue-700'
+                            : 'border-neutral-200 hover:border-neutral-300 bg-white'
+                        }`}
+                      >
+                        <profession.icon className="w-6 h-6 mx-auto mb-2" />
+                        <div className="text-sm font-medium">{profession.name}</div>
+                        <div className="text-xs text-neutral-500 mt-1">
+                          {profession.description}
+                        </div>
+                      </button>
+                    ))}
                   </div>
-                  <div className="flex items-center justify-center">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                    Nederlandse wetgeving
-                  </div>
-                  <div className="flex items-center justify-center">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
-                                          Betrouwbare antwoorden
+                </div>
+
+                {/* Example Questions */}
+                <div className="bg-white rounded-xl p-6 border border-neutral-200">
+                  <h3 className="text-lg font-semibold mb-4 text-neutral-900">
+                    Voorbeeld vragen voor {PROFESSIONS.find(p => p.id === selectedProfession)?.name}:
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                         {(EXAMPLE_QUESTIONS_BY_PROFESSION[selectedProfession as keyof typeof EXAMPLE_QUESTIONS_BY_PROFESSION] || []).map((question: string, index: number) => (
+                      <button
+                        key={index}
+                        onClick={() => setInputValue(question)}
+                        className="text-left p-3 bg-neutral-50 hover:bg-blue-50 rounded-lg border border-neutral-200 hover:border-blue-300 transition-all duration-200 text-sm"
+                      >
+                        <MessageSquare className="w-4 h-4 inline mr-2 text-blue-600" />
+                        {question}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              // Guest welcome
+              <GuestWelcome />
+            )
           ) : (
-            <div className="space-y-6">
+            // Messages
+            <div className="max-w-4xl mx-auto space-y-6">
               {messages.map((message) => (
-                <div key={message.id} className="animate-slide-up">
-                  {message.role === 'user' && (
-                    <div className="flex justify-end">
-                      <div className="message-user">
-                        <p className="whitespace-pre-wrap">{message.content}</p>
-                      </div>
+                <div
+                  key={message.id}
+                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                      message.role === 'user'
+                        ? 'bg-blue-600 text-white'
+                        : message.role === 'system'
+                        ? 'bg-red-50 text-red-800 border border-red-200'
+                        : 'bg-white text-neutral-900 border border-neutral-200 shadow-sm'
+                    }`}
+                  >
+                    {message.role === 'assistant' ? (
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: formatMessage(message.content),
+                        }}
+                        className="prose prose-sm max-w-none prose-blue"
+                      />
+                    ) : (
+                      <p className="text-sm leading-relaxed">{message.content}</p>
+                    )}
+                    <div
+                      className={`text-xs mt-2 ${
+                        message.role === 'user' ? 'text-blue-100' : 'text-neutral-500'
+                      }`}
+                    >
+                      {message.timestamp.toLocaleTimeString('nl-NL', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
                     </div>
-                  )}
-                  
-                  {message.role === 'assistant' && (
-                    <div className="flex justify-start">
-                      <div className="message-assistant">
-                        <div className="prose prose-sm max-w-none">
-                          <div dangerouslySetInnerHTML={{ __html: formatMessage(message.content) }} />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {message.role === 'system' && (
-                    <div className="flex justify-center">
-                      <div className="message-system">
-                        <p>{message.content}</p>
-                      </div>
-                    </div>
-                  )}
+                  </div>
                 </div>
               ))}
               
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="message-assistant">
+                  <div className="bg-white text-neutral-900 border border-neutral-200 shadow-sm rounded-2xl px-4 py-3">
                     <div className="flex items-center space-x-2">
                       <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
-                      <span className="text-neutral-600">WetHelder denkt na...</span>
+                      <span className="text-sm">WetHelder denkt na...</span>
                     </div>
                   </div>
                 </div>
               )}
+              
+              <div ref={messagesEndRef} />
             </div>
           )}
-          <div ref={messagesEndRef} />
         </div>
 
         {/* Input Area */}
-        <div className="chat-input-area">
-          <form onSubmit={handleSubmit} className="flex items-end space-x-3">
-            <div className="flex-1 relative">
-              <textarea
-                ref={textareaRef}
-                value={inputValue}
-                onChange={(e) => {
-                  setInputValue(e.target.value)
-                  adjustTextareaHeight()
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    handleSubmit(e)
+        <div className="border-t border-neutral-200 bg-white p-4">
+          {!session && guestMessageCount >= 1 && (
+            <div className="mb-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+              <div className="flex items-center text-orange-800">
+                <AlertCircle className="w-4 h-4 mr-2" />
+                <span className="text-sm">
+                  {guestMessageCount === 1 ? 
+                    "Nog 1 gratis vraag over. Maak een account aan voor onbeperkte toegang!" :
+                    "Je hebt je gratis vragen gebruikt. Log in om door te gaan."
                   }
-                }}
-                placeholder={session ? "Stel een juridische vraag..." : "Log in om te chatten..."}
-                disabled={!session || isLoading}
-                className="input resize-none min-h-[44px] max-h-[120px] py-3 pr-12"
-                rows={1}
-              />
+                </span>
+              </div>
             </div>
-            <button
-              type="submit"
-              disabled={!inputValue.trim() || !session || isLoading}
-              className="btn btn-primary p-3 shrink-0"
-            >
-              {isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <Send className="w-5 h-5" />
-              )}
-            </button>
-          </form>
-          
-          {!session && (
-            <p className="text-xs text-neutral-500 mt-2 text-center">
-              <Link href="/auth/signin" className="text-blue-600 hover:text-blue-700">
-                Log in
-              </Link>{' '}
-              of{' '}
-              <Link href="/auth/signup" className="text-blue-600 hover:text-blue-700">
-                registreer
-              </Link>{' '}
-              om de juridische hulp te gebruiken
-            </p>
           )}
+          
+          <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
+            <div className="flex items-end space-x-3">
+              <div className="flex-1 relative">
+                <textarea
+                  ref={textareaRef}
+                  value={inputValue}
+                  onChange={(e) => {
+                    setInputValue(e.target.value)
+                    adjustTextareaHeight()
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault()
+                      handleSubmit(e)
+                    }
+                  }}
+                  placeholder={
+                    !session && guestMessageCount >= 2 
+                      ? "Maak een account aan om verder te gaan..."
+                      : "Stel je juridische vraag..."
+                  }
+                  disabled={!session && guestMessageCount >= 2}
+                  className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none min-h-[50px] max-h-[120px] disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  rows={1}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isLoading || !inputValue.trim() || (!session && guestMessageCount >= 2)}
+                className="p-3 bg-blue-600 hover:bg-blue-700 disabled:bg-neutral-300 disabled:cursor-not-allowed text-white rounded-xl transition-colors"
+              >
+                <Send className="w-5 h-5" />
+              </button>
+            </div>
+          </form>
         </div>
       </div>
-
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/20 z-40 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
     </div>
   )
 } 

@@ -11,12 +11,14 @@ const PROFESSION_CONTEXTS = {
   civil_servant: "Je spreekt met een ambtenaar. Focus op bestuurlijk recht, regelgeving, beleidsuitvoering en administratieve procedures."
 }
 
-const getSystemPrompt = (profession: string) => {
+const getSystemPrompt = (profession: string, isGuest: boolean = false) => {
   const professionContext = PROFESSION_CONTEXTS[profession as keyof typeof PROFESSION_CONTEXTS] || PROFESSION_CONTEXTS.general;
+  
+  const guestNote = isGuest ? "\n\n⚠️ Dit is een gast-gebruiker. Geef een kort maar informatief antwoord en adviseer een account aan te maken voor uitgebreidere juridische ondersteuning." : "";
   
   return `Je bent een juridische assistent die gebruikers helpt bij het opzoeken en begrijpen van Nederlandse wet- en regelgeving.
 
-${professionContext}
+${professionContext}${guestNote}
 
 ✅ **Gebruik uitsluitend officiële bronnen**, zoals wetten.overheid.nl, overheid.nl, officielebekendmakingen.nl, boetebase.om.nl en overheidsgedomineerde SPARQL-endpoints.
 ❌ Geen antwoorden op basis van fora, blogs of niet-officiële interpretaties.
@@ -55,9 +57,14 @@ ${professionContext}
 ⚠️ Indien je twijfelt over de juistheid of actualiteit, vermeld dit expliciet in het antwoord.`
 }
 
+interface Message {
+  role: 'user' | 'assistant' | 'system'
+  content: string
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const { message, conversationHistory, profession = 'general' } = await req.json()
+    const { message, messages: currentMessages = [], isGuest = false, profession = 'general' } = await req.json()
 
     if (!message) {
       return NextResponse.json(
@@ -67,10 +74,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Prepare messages for API
-    const messages = [
-      { role: 'system', content: getSystemPrompt(profession) },
-      ...conversationHistory,
-      { role: 'user', content: message }
+    const messages: Message[] = [
+      { role: 'system', content: getSystemPrompt(profession, isGuest) },
+      ...currentMessages.map((msg: any) => ({
+        role: msg.role,
+        content: msg.content
+      }))
     ]
 
     const response = await fetch(DEEPSEEK_API_URL, {
@@ -83,7 +92,7 @@ export async function POST(req: NextRequest) {
         model: 'deepseek-chat',
         messages: messages,
         temperature: 0.2,
-        max_tokens: 2048,
+        max_tokens: isGuest ? 1024 : 2048, // Shorter responses for guests
         stream: false
       })
     })
@@ -108,8 +117,9 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({
-      message: assistantMessage,
-      usage: data.usage
+      response: assistantMessage,
+      usage: data.usage,
+      isGuest: isGuest
     })
 
   } catch (error) {
