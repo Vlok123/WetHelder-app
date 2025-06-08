@@ -72,7 +72,7 @@ export default function AdminDashboard() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-legal-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     )
@@ -80,11 +80,11 @@ export default function AdminDashboard() {
 
   if (!session) {
     return (
-      <div className="min-h-screen bg-legal-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <Scale className="mx-auto h-12 w-12 text-legal-400 mb-4" />
-          <h1 className="text-2xl font-bold text-legal-900 mb-2">Admin Dashboard</h1>
-          <p className="text-legal-600 mb-6">Je moet ingelogd zijn om het admin dashboard te bekijken</p>
+          <Scale className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
+          <p className="text-gray-600 mb-6">Je moet ingelogd zijn om het admin dashboard te bekijken</p>
           <Link
             href="/auth/signin"
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -98,14 +98,14 @@ export default function AdminDashboard() {
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-legal-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Shield className="mx-auto h-12 w-12 text-red-400 mb-4" />
           <h1 className="text-2xl font-bold text-red-900 mb-2">Geen toegang</h1>
           <p className="text-red-600 mb-6">Je hebt geen admin rechten om dit dashboard te bekijken</p>
           <Link
             href="/"
-            className="px-6 py-3 bg-legal-600 text-white rounded-lg hover:bg-legal-700 transition-colors"
+            className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
           >
             Terug naar Chat
           </Link>
@@ -116,7 +116,7 @@ export default function AdminDashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-legal-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6">
             <p className="text-red-700">{error}</p>
@@ -133,20 +133,20 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-legal-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-legal-200 p-4">
+      <header className="bg-white shadow-sm border-b border-gray-200 p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <BarChart3 className="w-8 h-8 text-blue-600" />
             <div>
-              <h1 className="text-2xl font-bold text-legal-900">Admin Dashboard</h1>
-              <p className="text-legal-600 text-sm">Statistieken & Gebruikersbeheer</p>
+              <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+              <p className="text-gray-600 text-sm">Statistieken & Gebruikersbeheer</p>
             </div>
           </div>
           <Link
             href="/"
-            className="px-4 py-2 bg-legal-100 hover:bg-legal-200 rounded-lg transition-colors text-legal-700"
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-gray-700"
           >
             ← Terug naar Chat
           </Link>
@@ -158,42 +158,42 @@ export default function AdminDashboard() {
           <>
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <div className="bg-white rounded-lg p-6 shadow-sm border border-legal-200">
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-legal-600">Totaal Gebruikers</p>
-                    <p className="text-3xl font-bold text-legal-900">{stats.totalUsers}</p>
+                    <p className="text-sm font-medium text-gray-600">Totaal Gebruikers</p>
+                    <p className="text-3xl font-bold text-gray-900">{stats.totalUsers}</p>
                   </div>
                   <Users className="w-8 h-8 text-blue-600" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg p-6 shadow-sm border border-legal-200">
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-legal-600">Conversaties</p>
-                    <p className="text-3xl font-bold text-legal-900">{stats.totalConversations}</p>
+                    <p className="text-sm font-medium text-gray-600">Conversaties</p>
+                    <p className="text-3xl font-bold text-gray-900">{stats.totalConversations}</p>
                   </div>
                   <MessageSquare className="w-8 h-8 text-blue-600" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg p-6 shadow-sm border border-legal-200">
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-legal-600">Totaal Berichten</p>
-                    <p className="text-3xl font-bold text-legal-900">{stats.totalMessages}</p>
+                    <p className="text-sm font-medium text-gray-600">Totaal Berichten</p>
+                    <p className="text-3xl font-bold text-gray-900">{stats.totalMessages}</p>
                   </div>
                   <TrendingUp className="w-8 h-8 text-blue-600" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg p-6 shadow-sm border border-legal-200">
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-legal-600">Vandaag</p>
-                    <p className="text-3xl font-bold text-legal-900">{stats.conversationsToday}</p>
-                    <p className="text-xs text-legal-500">nieuwe gesprekken</p>
+                    <p className="text-sm font-medium text-gray-600">Vandaag</p>
+                    <p className="text-3xl font-bold text-gray-900">{stats.conversationsToday}</p>
+                    <p className="text-xs text-gray-500">nieuwe gesprekken</p>
                   </div>
                   <Calendar className="w-8 h-8 text-blue-600" />
                 </div>
@@ -202,8 +202,8 @@ export default function AdminDashboard() {
 
             {/* Profession Distribution */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-              <div className="bg-white rounded-lg p-6 shadow-sm border border-legal-200">
-                <h3 className="text-lg font-semibold text-legal-900 mb-4">Gebruikers per Beroep</h3>
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Gebruikers per Beroep</h3>
                 <div className="space-y-3">
                   {stats.usersByProfession.map((item) => {
                     const Icon = PROFESSION_ICONS[item.profession as keyof typeof PROFESSION_ICONS] || User
@@ -213,16 +213,16 @@ export default function AdminDashboard() {
                       <div key={item.profession} className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <Icon className="w-5 h-5 text-blue-600" />
-                          <span className="text-sm font-medium text-legal-700">{item.name}</span>
+                          <span className="text-sm font-medium text-gray-700">{item.name}</span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <div className="w-24 bg-legal-200 rounded-full h-2">
+                          <div className="w-24 bg-gray-200 rounded-full h-2">
                             <div 
                               className="bg-blue-600 h-2 rounded-full" 
                               style={{ width: `${percentage}%` }}
                             ></div>
                           </div>
-                          <span className="text-sm font-semibold text-legal-900 w-8">{item.count}</span>
+                          <span className="text-sm font-semibold text-gray-900 w-8">{item.count}</span>
                         </div>
                       </div>
                     )
@@ -231,19 +231,19 @@ export default function AdminDashboard() {
               </div>
 
               {/* Usage Stats */}
-              <div className="bg-white rounded-lg p-6 shadow-sm border border-legal-200">
-                <h3 className="text-lg font-semibold text-legal-900 mb-4">Gebruiksstatistieken</h3>
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Gebruiksstatistieken</h3>
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center p-3 bg-legal-50 rounded-lg">
-                    <span className="text-sm font-medium text-legal-700">Berichten deze week</span>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm font-medium text-gray-700">Berichten deze week</span>
                     <span className="text-lg font-bold text-blue-600">{stats.messagesThisWeek}</span>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-legal-50 rounded-lg">
-                    <span className="text-sm font-medium text-legal-700">Gem. berichten per gesprek</span>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm font-medium text-gray-700">Gem. berichten per gesprek</span>
                     <span className="text-lg font-bold text-blue-600">{stats.averageMessagesPerConversation}</span>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-legal-50 rounded-lg">
-                    <span className="text-sm font-medium text-legal-700">Gesprekken vandaag</span>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm font-medium text-gray-700">Gesprekken vandaag</span>
                     <span className="text-lg font-bold text-blue-600">{stats.conversationsToday}</span>
                   </div>
                 </div>
@@ -251,16 +251,16 @@ export default function AdminDashboard() {
             </div>
 
             {/* Recent Users */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border border-legal-200">
-              <h3 className="text-lg font-semibold text-legal-900 mb-4">Recente Gebruikers</h3>
+            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Recente Gebruikers</h3>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-legal-200">
-                      <th className="text-left py-3 px-4 font-medium text-legal-700">Naam</th>
-                      <th className="text-left py-3 px-4 font-medium text-legal-700">Email</th>
-                      <th className="text-left py-3 px-4 font-medium text-legal-700">Beroep</th>
-                      <th className="text-left py-3 px-4 font-medium text-legal-700">Aangemeld</th>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">Naam</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">Email</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">Beroep</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">Aangemeld</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -268,18 +268,18 @@ export default function AdminDashboard() {
                       const Icon = PROFESSION_ICONS[user.profession as keyof typeof PROFESSION_ICONS] || User
                       
                       return (
-                        <tr key={index} className="border-b border-legal-100">
-                          <td className="py-3 px-4 text-legal-900">{user.name}</td>
-                          <td className="py-3 px-4 text-legal-600">{user.email}</td>
+                        <tr key={index} className="border-b border-gray-100">
+                          <td className="py-3 px-4 text-gray-900">{user.name}</td>
+                          <td className="py-3 px-4 text-gray-600">{user.email}</td>
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-2">
                               <Icon className="w-4 h-4 text-blue-600" />
-                              <span className="text-legal-700">
+                              <span className="text-gray-700">
                                 {PROFESSION_NAMES[user.profession as keyof typeof PROFESSION_NAMES]}
                               </span>
                             </div>
                           </td>
-                          <td className="py-3 px-4 text-legal-600">
+                          <td className="py-3 px-4 text-gray-600">
                             {new Date(user.createdAt).toLocaleDateString('nl-NL')}
                           </td>
                         </tr>

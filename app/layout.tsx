@@ -18,7 +18,7 @@ export default function RootLayout({
     <html lang="nl">
       <body>
         <Providers session={null}>
-          <div className="min-h-screen bg-legal-50">
+          <div className="min-h-screen bg-gray-50">
             {children}
           </div>
         </Providers>

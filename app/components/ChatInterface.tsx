@@ -237,20 +237,20 @@ export default function ChatInterface() {
         </a>`
       )
       // Format headers (### Header or **Header:**)
-      .replace(/^### (.*$)/gm, '<h3 class="text-lg font-semibold text-legal-800 mt-4 mb-2 border-b border-legal-200 pb-1">$1</h3>')
-      .replace(/^## (.*$)/gm, '<h2 class="text-xl font-bold text-legal-800 mt-5 mb-3 border-b-2 border-blue-500 pb-2">$1</h2>')
+      .replace(/^### (.*$)/gm, '<h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2 border-b border-gray-200 pb-1">$1</h3>')
+      .replace(/^## (.*$)/gm, '<h2 class="text-xl font-bold text-gray-800 mt-5 mb-3 border-b-2 border-blue-500 pb-2">$1</h2>')
       // Format bold text and article references
-      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-legal-900">$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em class="italic text-legal-700">$1</em>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em class="italic text-gray-700">$1</em>')
       // Format article references (Artikel X van de Wet)
       .replace(/(Artikel \d+[a-z]*(?:\s+lid \d+)?(?:\s+sub [a-z])?(?:\s+onder [a-z0-9]+)?)\s+(van de|uit de|in de)\s+([A-Z][^.]*?)(?=[\.\,\;\:]|$)/g, 
-        '<div class="law-reference my-3 p-3 bg-legal-50 border-l-4 border-blue-500 rounded-r-lg"><strong class="text-blue-700">$1</strong> <span class="text-legal-600">$2</span> <strong class="text-legal-800">$3</strong></div>')
+        '<div class="law-reference my-3 p-3 bg-gray-50 border-l-4 border-blue-500 rounded-r-lg"><strong class="text-blue-700">$1</strong> <span class="text-gray-600">$2</span> <strong class="text-gray-800">$3</strong></div>')
       // Format law names in parentheses
-      .replace(/\(([A-Z][a-zA-Z\s]+wet[a-zA-Z\s]*|AWB|WVW|Sr|Sv|BW)\)/g, '<span class="bg-legal-100 px-2 py-1 rounded text-sm font-medium text-legal-700">($1)</span>')
+      .replace(/\(([A-Z][a-zA-Z\s]+wet[a-zA-Z\s]*|AWB|WVW|Sr|Sv|BW)\)/g, '<span class="bg-gray-100 px-2 py-1 rounded text-sm font-medium text-gray-700">($1)</span>')
       // Format lists with bullets
-      .replace(/^[\*\-\•]\s+(.*$)/gm, '<li class="ml-4 mb-1 text-legal-800">• $1</li>')
+      .replace(/^[\*\-\•]\s+(.*$)/gm, '<li class="ml-4 mb-1 text-gray-800">• $1</li>')
       // Format numbered lists
-      .replace(/^\d+\.\s+(.*$)/gm, '<li class="ml-4 mb-1 text-legal-800 list-decimal">$1</li>')
+      .replace(/^\d+\.\s+(.*$)/gm, '<li class="ml-4 mb-1 text-gray-800 list-decimal">$1</li>')
       
     // Wrap consecutive list items in ul tags
     formatted = formatted.replace(/((?:<li[^>]*>.*?<\/li>\s*)+)/g, '<ul class="my-2 space-y-1">$1</ul>')
@@ -267,7 +267,7 @@ export default function ChatInterface() {
           return paragraph
         }
         
-        return `<p class="mb-3 text-legal-800 leading-relaxed">${paragraph}</p>`
+        return `<p class="mb-3 text-gray-800 leading-relaxed">${paragraph}</p>`
       })
       .join('')
 
@@ -275,7 +275,7 @@ export default function ChatInterface() {
   }
 
   return (
-    <div className="flex h-screen bg-legal-50">
+    <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
       {session && (
         <ChatSidebar
@@ -297,15 +297,15 @@ export default function ChatInterface() {
         </div>
       
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-legal-200 p-4">
+      <header className="bg-white shadow-sm border-b border-gray-200 p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Scale className="w-8 h-8 text-blue-600" />
             <div>
-              <h1 className="text-2xl font-bold text-legal-900">
+              <h1 className="text-2xl font-bold text-gray-900">
                 Nederlandse Juridische Assistent
               </h1>
-              <p className="text-legal-600 text-sm">
+              <p className="text-gray-600 text-sm">
                 Gebaseerd op officiële Nederlandse bronnen zoals wetten.overheid.nl
               </p>
             </div>
@@ -340,12 +340,12 @@ export default function ChatInterface() {
           <div className="flex items-center gap-3">
             {/* User Authentication */}
             {status === 'loading' ? (
-              <div className="animate-pulse bg-legal-200 h-10 w-32 rounded-lg"></div>
+              <div className="animate-pulse bg-gray-200 h-10 w-32 rounded-lg"></div>
             ) : session ? (
               <div className="flex items-center gap-3">
                 <div className="text-right">
-                  <p className="text-sm font-medium text-legal-700">{session.user?.name}</p>
-                  <p className="text-xs text-legal-500">{session.user?.email}</p>
+                  <p className="text-sm font-medium text-gray-700">{session.user?.name}</p>
+                  <p className="text-xs text-gray-500">{session.user?.email}</p>
                 </div>
                 {/* Admin Dashboard Link - only for admin emails */}
                 {(session.user?.email === 'admin@example.com' || session.user?.email === 'your-email@domain.com' || session.user?.email === 'sanderhelmink@gmail.com') && (
@@ -359,7 +359,7 @@ export default function ChatInterface() {
                 )}
                 <button
                   onClick={() => signOut()}
-                  className="flex items-center gap-2 px-3 py-2 text-sm bg-legal-100 hover:bg-legal-200 rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Uitloggen</span>
@@ -369,7 +369,7 @@ export default function ChatInterface() {
               <div className="flex items-center gap-2">
                 <Link
                   href="/auth/signin"
-                  className="px-4 py-2 text-sm font-medium text-legal-700 bg-legal-100 hover:bg-legal-200 rounded-lg transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                 >
                   Inloggen
                 </Link>
@@ -387,21 +387,21 @@ export default function ChatInterface() {
               <div className="relative">
                 <button
                   onClick={() => setShowProfessionSelector(!showProfessionSelector)}
-                  className="flex items-center gap-2 px-4 py-2 bg-legal-100 hover:bg-legal-200 rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                 >
                   {React.createElement(PROFESSIONS.find(p => p.id === selectedProfession)?.icon || User, {
                     className: "w-4 h-4 text-blue-600"
                   })}
-                  <span className="text-sm font-medium text-legal-700">
+                  <span className="text-sm font-medium text-gray-700">
                     {PROFESSIONS.find(p => p.id === selectedProfession)?.name}
                   </span>
                 </button>
                 
                 {showProfessionSelector && (
-                  <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-lg shadow-lg border border-legal-200 z-50">
-                    <div className="p-3 border-b border-legal-200">
-                      <h3 className="font-medium text-legal-900">Selecteer uw beroep</h3>
-                      <p className="text-xs text-legal-600 mt-1">Voor op maat gemaakte juridische antwoorden</p>
+                  <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                    <div className="p-3 border-b border-gray-200">
+                      <h3 className="font-medium text-gray-900">Selecteer uw beroep</h3>
+                      <p className="text-xs text-gray-600 mt-1">Voor op maat gemaakte juridische antwoorden</p>
                     </div>
                     <div className="p-2">
                       {PROFESSIONS.map((profession) => (
@@ -411,20 +411,20 @@ export default function ChatInterface() {
                             setSelectedProfession(profession.id)
                             setShowProfessionSelector(false)
                           }}
-                          className={`w-full flex items-center gap-3 p-3 rounded-lg hover:bg-legal-50 transition-colors ${
+                          className={`w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors ${
                             selectedProfession === profession.id ? 'bg-blue-50 border border-blue-200' : ''
                           }`}
                         >
                           {React.createElement(profession.icon, {
-                            className: `w-5 h-5 ${selectedProfession === profession.id ? 'text-blue-600' : 'text-legal-500'}`
+                            className: `w-5 h-5 ${selectedProfession === profession.id ? 'text-blue-600' : 'text-gray-500'}`
                           })}
                           <div className="text-left">
                             <div className={`font-medium text-sm ${
-                              selectedProfession === profession.id ? 'text-blue-700' : 'text-legal-700'
+                              selectedProfession === profession.id ? 'text-blue-700' : 'text-gray-700'
                             }`}>
                               {profession.name}
                             </div>
-                            <div className="text-xs text-legal-600">{profession.description}</div>
+                            <div className="text-xs text-gray-600">{profession.description}</div>
                           </div>
                         </button>
                       ))}
@@ -444,10 +444,10 @@ export default function ChatInterface() {
             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <Scale className="w-8 h-8 text-blue-600" />
             </div>
-            <h1 className="text-3xl font-bold text-legal-900 mb-4">
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">
               WetHelder
             </h1>
-            <p className="text-lg text-legal-600 mb-8 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
               {session ? `Welkom terug, ${session.user?.name?.split(' ')[0]}!` : 'Welkom bij WetHelder'}
               <br />
               Uw Nederlandse juridische assistent voor wet- en regelgeving op basis van officiële bronnen zoals wetten.overheid.nl
@@ -477,7 +477,7 @@ export default function ChatInterface() {
             
             {session && (
               <div className="mb-6 flex flex-col items-center gap-3">
-                <span className="text-sm text-legal-600">Uw profiel bepaalt welke vragen en antwoorden u krijgt:</span>
+                <span className="text-sm text-gray-600">Uw profiel bepaalt welke vragen en antwoorden u krijgt:</span>
                 <div className="relative">
                   <button
                     onClick={(e) => {
@@ -498,10 +498,10 @@ export default function ChatInterface() {
                   </button>
                   
                   {showProfessionSelector && (
-                    <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 w-80 bg-white rounded-lg shadow-lg border border-legal-200 z-50">
-                      <div className="p-3 border-b border-legal-200">
-                        <h3 className="font-medium text-legal-900">Kies uw profiel</h3>
-                        <p className="text-xs text-legal-600 mt-1">Dit bepaalt welke vragen en antwoorden u krijgt</p>
+                    <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                      <div className="p-3 border-b border-gray-200">
+                        <h3 className="font-medium text-gray-900">Kies uw profiel</h3>
+                        <p className="text-xs text-gray-600 mt-1">Dit bepaalt welke vragen en antwoorden u krijgt</p>
                       </div>
                       <div className="p-2">
                         {PROFESSIONS.map((profession) => (
@@ -511,20 +511,20 @@ export default function ChatInterface() {
                               setSelectedProfession(profession.id)
                               setShowProfessionSelector(false)
                             }}
-                            className={`w-full flex items-center gap-3 p-3 rounded-lg hover:bg-legal-50 transition-colors ${
+                            className={`w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors ${
                               selectedProfession === profession.id ? 'bg-blue-50 border border-blue-200' : ''
                             }`}
                           >
                             {React.createElement(profession.icon, {
-                              className: `w-5 h-5 ${selectedProfession === profession.id ? 'text-blue-600' : 'text-legal-500'}`
+                              className: `w-5 h-5 ${selectedProfession === profession.id ? 'text-blue-600' : 'text-gray-500'}`
                             })}
                             <div className="text-left flex-1">
                               <div className={`font-medium text-sm ${
-                                selectedProfession === profession.id ? 'text-blue-700' : 'text-legal-700'
+                                selectedProfession === profession.id ? 'text-blue-700' : 'text-gray-700'
                               }`}>
                                 {profession.name}
                               </div>
-                              <div className="text-xs text-legal-600">{profession.description}</div>
+                              <div className="text-xs text-gray-600">{profession.description}</div>
                             </div>
                             {selectedProfession === profession.id && (
                               <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
@@ -683,27 +683,27 @@ export default function ChatInterface() {
               )}
               <div className="flex-1">
                                  <div className="flex items-center gap-2 mb-2">
-                   <span className="font-medium text-sm text-legal-700">
+                   <span className="font-medium text-sm text-gray-700">
                      {message.role === 'user' ? 'U' : 'WetHelder'}
                    </span>
-                   <span className="text-xs text-legal-500 bg-legal-100 px-2 py-1 rounded">
+                   <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
                      {message.timestamp.toLocaleTimeString('nl-NL')}
                    </span>
                  </div>
                  {message.role === 'assistant' ? (
                    <div className="space-y-2">
                      <div 
-                       className="formatted-content text-legal-800"
+                       className="formatted-content text-gray-800"
                        dangerouslySetInnerHTML={{ __html: formatMessage(message.content) }}
                      />
-                     <div className="text-xs text-legal-500 italic border-t border-legal-200 pt-3 mt-4 flex items-center gap-2">
+                     <div className="text-xs text-gray-500 italic border-t border-gray-200 pt-3 mt-4 flex items-center gap-2">
                        <span>⚖️</span>
                        <span>Gebaseerd op officiële Nederlandse bronnen zoals wetten.overheid.nl</span>
                      </div>
                    </div>
                  ) : (
                    <div 
-                     className="text-legal-800 leading-relaxed font-medium"
+                     className="text-gray-800 leading-relaxed font-medium"
                      dangerouslySetInnerHTML={{ __html: formatMessage(message.content) }}
                    />
                  )}
@@ -718,7 +718,7 @@ export default function ChatInterface() {
               <Scale className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1 animate-pulse" />
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="font-medium text-sm text-legal-700">WetHelder</span>
+                  <span className="font-medium text-sm text-gray-700">WetHelder</span>
                 </div>
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
@@ -727,28 +727,28 @@ export default function ChatInterface() {
                       <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
                       <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                     </div>
-                    <span className="text-legal-600 text-sm font-medium">Zoeken in de Nederlandse wet- en regelgeving...</span>
+                    <span className="text-gray-600 text-sm font-medium">Zoeken in de Nederlandse wet- en regelgeving...</span>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-blue-50 to-legal-50 rounded-lg p-4 border border-blue-200">
+                  <div className="bg-gradient-to-r from-blue-50 to-gray-50 rounded-lg p-4 border border-blue-200">
                     <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2 text-xs text-legal-600">
+                      <div className="flex items-center gap-2 text-xs text-gray-600">
                         <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                         <span className="font-medium">Analyseren van officiële bronnen</span>
                       </div>
-                      <div className="text-xs text-legal-500 bg-white px-2 py-1 rounded">
+                      <div className="text-xs text-gray-500 bg-white px-2 py-1 rounded">
                         ⏱️ ~30 seconden
                       </div>
                     </div>
-                    <div className="text-xs text-legal-600 mb-2">
+                    <div className="text-xs text-gray-600 mb-2">
                       📚 Bronnen: wetten.overheid.nl, officielebekendmakingen.nl
                     </div>
-                    <div className="w-full bg-legal-200 rounded-full h-1">
+                    <div className="w-full bg-gray-200 rounded-full h-1">
                       <div className="bg-blue-600 h-1 rounded-full animate-pulse" style={{width: '45%'}}></div>
                     </div>
                   </div>
                   
-                  <div className="text-xs text-legal-500 italic flex items-center gap-1">
+                  <div className="text-xs text-gray-500 italic flex items-center gap-1">
                     <span>💡</span>
                     <span>De verwerkingstijd is afhankelijk van de complexiteit van uw vraag</span>
                   </div>
@@ -816,14 +816,14 @@ export default function ChatInterface() {
       </div>
 
       {/* Input Form */}
-      <form onSubmit={handleSubmit} className="border-t border-legal-200 bg-white p-4">
+      <form onSubmit={handleSubmit} className="border-t border-gray-200 bg-white p-4">
         <div className="flex gap-3">
           <input
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Stel uw juridische vraag..."
-            className="flex-1 px-4 py-3 border border-legal-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             disabled={isLoading}
           />
           <button
@@ -836,7 +836,7 @@ export default function ChatInterface() {
           </button>
         </div>
         <div className="mt-2 space-y-2">
-          <p className="text-xs text-legal-500">
+          <p className="text-xs text-gray-500">
             Alleen vragen over Nederlandse wet- en regelgeving worden beantwoord op basis van officiële bronnen.
           </p>
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-2">

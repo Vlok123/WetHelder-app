@@ -50,7 +50,7 @@ export default function BoetesPage() {
       // Headers (lines starting with ##)
       if (line.startsWith('## ')) {
         return (
-          <h3 key={index} className="text-lg font-semibold text-legal-800 mt-4 mb-2 first:mt-0">
+          <h3 key={index} className="text-lg font-semibold text-gray-800 mt-4 mb-2 first:mt-0">
             {line.substring(3)}
           </h3>
         )
@@ -77,7 +77,7 @@ export default function BoetesPage() {
       // Bullet points
       if (line.trim().startsWith('- ') || line.trim().startsWith('• ')) {
         return (
-          <li key={index} className="ml-4 text-legal-700 mb-1">
+          <li key={index} className="ml-4 text-gray-700 mb-1">
             {line.substring(2)}
           </li>
         )
@@ -86,7 +86,7 @@ export default function BoetesPage() {
       // Regular paragraphs
       if (line.trim()) {
         return (
-          <p key={index} className="text-legal-700 mb-2 leading-relaxed">
+          <p key={index} className="text-gray-700 mb-2 leading-relaxed">
             {line}
           </p>
         )
@@ -513,13 +513,13 @@ export default function BoetesPage() {
                           <div className={`inline-block max-w-[85%] rounded-lg p-4 ${
                             message.role === 'user' 
                               ? 'bg-gradient-to-r from-blue-100 to-blue-50 ml-8 border border-blue-200' 
-                              : 'bg-legal-50 border border-legal-200'
+                              : 'bg-gray-50 border border-gray-200'
                           }`}>
-                            <div className={`text-sm ${message.role === 'user' ? 'text-blue-800' : 'text-legal-800'}`}>
+                            <div className={`text-sm ${message.role === 'user' ? 'text-blue-800' : 'text-gray-800'}`}>
                               {message.role === 'assistant' ? formatMessage(message.content) : message.content}
                             </div>
                             <div className={`text-xs mt-2 ${
-                              message.role === 'user' ? 'text-blue-600' : 'text-legal-600'
+                              message.role === 'user' ? 'text-blue-600' : 'text-gray-600'
                             }`}>
                               {message.timestamp.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
                             </div>
@@ -533,14 +533,14 @@ export default function BoetesPage() {
                         <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
                           <Car className="w-4 h-4 text-blue-600" />
                         </div>
-                        <div className="bg-legal-50 border border-legal-200 rounded-lg p-4">
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                           <div className="flex items-center gap-2">
                             <div className="flex space-x-1">
                               <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
                               <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
                               <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                             </div>
-                                                         <span className="text-sm text-legal-600">Verkeersboete Assistent denkt na...</span>
+                                                         <span className="text-sm text-gray-600">Verkeersboete Assistent denkt na...</span>
                            </div>
                         </div>
                       </div>
