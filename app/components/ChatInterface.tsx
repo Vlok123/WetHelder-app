@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { Send, Scale, AlertCircle, ExternalLink, User, Briefcase, Shield, Gavel, FileText, LogOut, History, BarChart3, MessageSquare } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
+import ChatSidebar from './ChatSidebar'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -68,6 +69,8 @@ export default function ChatInterface() {
   const [selectedProfession, setSelectedProfession] = useState<string>('general')
   const [showProfessionSelector, setShowProfessionSelector] = useState(false)
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
+  const [guestMessageCount, setGuestMessageCount] = useState(0)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -93,6 +96,12 @@ export default function ChatInterface() {
     e.preventDefault()
     if (!inputValue.trim() || isLoading) return
 
+    // Temporarily unlimited for all users
+    // if (!session && guestMessageCount >= 1) {
+    //   setError('Je hebt het maximum aantal gratis berichten bereikt. Maak een account aan om verder te chatten en je gesprekken op te slaan.')
+    //   return
+    // }
+
     const userMessage: Message = {
       role: 'user',
       content: inputValue.trim(),
@@ -104,6 +113,11 @@ export default function ChatInterface() {
     setInputValue('')
     setIsLoading(true)
     setError(null)
+
+    // Increment guest message count
+    if (!session) {
+      setGuestMessageCount(prev => prev + 1)
+    }
 
     try {
       // Create conversation if logged in and no current conversation
@@ -196,24 +210,41 @@ export default function ChatInterface() {
     setInputValue(question)
   }
 
+  const handleConversationSelect = (conversationId: string, conversationMessages: any[]) => {
+    setCurrentConversationId(conversationId)
+    setMessages(conversationMessages)
+    setError(null)
+  }
+
+  const handleNewConversation = () => {
+    setCurrentConversationId(null)
+    setMessages([])
+    setError(null)
+    setInputValue('')
+  }
+
+  const handleToggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed)
+  }
+
   const formatMessage = (content: string) => {
     // Enhanced formatting for better structure and readability
     let formatted = content
       // Format links with external link icon
       .replace(/https?:\/\/[^\s]+/g, (url) => 
-        `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-primary-600 hover:text-primary-800 underline inline-flex items-center gap-1 font-medium">
+        `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1 font-medium">
           ${url} <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
         </a>`
       )
       // Format headers (### Header or **Header:**)
       .replace(/^### (.*$)/gm, '<h3 class="text-lg font-semibold text-legal-800 mt-4 mb-2 border-b border-legal-200 pb-1">$1</h3>')
-      .replace(/^## (.*$)/gm, '<h2 class="text-xl font-bold text-legal-800 mt-5 mb-3 border-b-2 border-primary-500 pb-2">$1</h2>')
+      .replace(/^## (.*$)/gm, '<h2 class="text-xl font-bold text-legal-800 mt-5 mb-3 border-b-2 border-blue-500 pb-2">$1</h2>')
       // Format bold text and article references
       .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-legal-900">$1</strong>')
       .replace(/\*(.*?)\*/g, '<em class="italic text-legal-700">$1</em>')
       // Format article references (Artikel X van de Wet)
       .replace(/(Artikel \d+[a-z]*(?:\s+lid \d+)?(?:\s+sub [a-z])?(?:\s+onder [a-z0-9]+)?)\s+(van de|uit de|in de)\s+([A-Z][^.]*?)(?=[\.\,\;\:]|$)/g, 
-        '<div class="law-reference my-3 p-3 bg-legal-50 border-l-4 border-primary-500 rounded-r-lg"><strong class="text-primary-700">$1</strong> <span class="text-legal-600">$2</span> <strong class="text-legal-800">$3</strong></div>')
+        '<div class="law-reference my-3 p-3 bg-legal-50 border-l-4 border-blue-500 rounded-r-lg"><strong class="text-blue-700">$1</strong> <span class="text-legal-600">$2</span> <strong class="text-legal-800">$3</strong></div>')
       // Format law names in parentheses
       .replace(/\(([A-Z][a-zA-Z\s]+wet[a-zA-Z\s]*|AWB|WVW|Sr|Sv|BW)\)/g, '<span class="bg-legal-100 px-2 py-1 rounded text-sm font-medium text-legal-700">($1)</span>')
       // Format lists with bullets
@@ -244,12 +275,32 @@ export default function ChatInterface() {
   }
 
   return (
-    <div className="flex flex-col h-screen max-w-4xl mx-auto">
+    <div className="flex h-screen bg-legal-50">
+      {/* Sidebar */}
+      {session && (
+        <ChatSidebar
+          onConversationSelect={handleConversationSelect}
+          onNewConversation={handleNewConversation}
+          currentConversationId={currentConversationId}
+          isCollapsed={sidebarCollapsed}
+          onToggleCollapse={handleToggleSidebar}
+        />
+      )}
+
+      {/* Main Content */}
+      <div className="flex flex-col flex-1 max-w-4xl mx-auto">
+        {/* Free Access Banner */}
+        <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white text-center py-2 px-4">
+          <p className="text-sm font-medium">
+            🎉 <strong>WetHelder is tijdelijk geheel gratis!</strong> Onbeperkt vragen stellen voor iedereen.
+          </p>
+        </div>
+      
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-legal-200 p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Scale className="w-8 h-8 text-primary-600" />
+            <Scale className="w-8 h-8 text-blue-600" />
             <div>
               <h1 className="text-2xl font-bold text-legal-900">
                 Nederlandse Juridische Assistent
@@ -272,6 +323,8 @@ export default function ChatInterface() {
               Verkeersbonnen
               <span className="text-blue-100 text-xs">→</span>
             </Link>
+            
+
             
             <div className="h-4 w-px bg-gray-300"></div>
             
@@ -298,7 +351,7 @@ export default function ChatInterface() {
                 {(session.user?.email === 'admin@example.com' || session.user?.email === 'your-email@domain.com' || session.user?.email === 'sanderhelmink@gmail.com') && (
                   <Link
                     href="/admin"
-                    className="flex items-center gap-2 px-3 py-2 text-sm bg-primary-100 hover:bg-primary-200 rounded-lg transition-colors text-primary-700"
+                    className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors text-blue-700"
                   >
                     <BarChart3 className="w-4 h-4" />
                     <span>Admin</span>
@@ -322,7 +375,7 @@ export default function ChatInterface() {
                 </Link>
                 <Link
                   href="/auth/signup"
-                  className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
                 >
                   Registreren
                 </Link>
@@ -337,7 +390,7 @@ export default function ChatInterface() {
                   className="flex items-center gap-2 px-4 py-2 bg-legal-100 hover:bg-legal-200 rounded-lg transition-colors"
                 >
                   {React.createElement(PROFESSIONS.find(p => p.id === selectedProfession)?.icon || User, {
-                    className: "w-4 h-4 text-primary-600"
+                    className: "w-4 h-4 text-blue-600"
                   })}
                   <span className="text-sm font-medium text-legal-700">
                     {PROFESSIONS.find(p => p.id === selectedProfession)?.name}
@@ -359,15 +412,15 @@ export default function ChatInterface() {
                             setShowProfessionSelector(false)
                           }}
                           className={`w-full flex items-center gap-3 p-3 rounded-lg hover:bg-legal-50 transition-colors ${
-                            selectedProfession === profession.id ? 'bg-primary-50 border border-blue-200' : ''
+                            selectedProfession === profession.id ? 'bg-blue-50 border border-blue-200' : ''
                           }`}
                         >
                           {React.createElement(profession.icon, {
-                            className: `w-5 h-5 ${selectedProfession === profession.id ? 'text-primary-600' : 'text-legal-500'}`
+                            className: `w-5 h-5 ${selectedProfession === profession.id ? 'text-blue-600' : 'text-legal-500'}`
                           })}
                           <div className="text-left">
                             <div className={`font-medium text-sm ${
-                              selectedProfession === profession.id ? 'text-primary-700' : 'text-legal-700'
+                              selectedProfession === profession.id ? 'text-blue-700' : 'text-legal-700'
                             }`}>
                               {profession.name}
                             </div>
@@ -388,8 +441,8 @@ export default function ChatInterface() {
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
           <div className="text-center py-12">
-            <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Scale className="w-8 h-8 text-primary-600" />
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Scale className="w-8 h-8 text-blue-600" />
             </div>
             <h1 className="text-3xl font-bold text-legal-900 mb-4">
               WetHelder
@@ -401,20 +454,20 @@ export default function ChatInterface() {
             </p>
             
             {!session && (
-              <div className="mb-6 p-4 bg-primary-50 border border-blue-200 rounded-lg max-w-lg mx-auto">
-                <p className="text-sm text-primary-700 mb-3">
-                  💡 <strong>Tip:</strong> Maak een account aan om uw gesprekken op te slaan en een beroepspecifieke ervaring te krijgen.
+              <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg max-w-lg mx-auto">
+                <p className="text-sm text-green-700 mb-3">
+                  🎉 <strong>Tijdelijk geheel gratis!</strong> WetHelder is nu volledig gratis te gebruiken. Maak een account aan voor aangepaste antwoorden als <strong>Algemeen publiek, Advocaat, Politieagent, Rechter/Jurist of Ambtenaar</strong> + gesprekgeschiedenis.
                 </p>
                 <div className="flex gap-2 justify-center">
                   <Link
                     href="/auth/signup"
-                    className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
                   >
-                    Account aanmaken
+                    Account Aanmaken
                   </Link>
                   <Link
                     href="/auth/signin"
-                    className="px-4 py-2 text-sm font-medium text-primary-700 bg-white border border-primary-300 hover:bg-primary-50 rounded-lg transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-green-700 bg-white border border-green-300 hover:bg-green-50 rounded-lg transition-colors"
                   >
                     Inloggen
                   </Link>
@@ -431,15 +484,15 @@ export default function ChatInterface() {
                       e.stopPropagation()
                       setShowProfessionSelector(!showProfessionSelector)
                     }}
-                    className="flex items-center gap-2 px-4 py-2 bg-primary-50 hover:bg-primary-100 border border-blue-200 rounded-lg transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors"
                   >
                     {React.createElement(PROFESSIONS.find(p => p.id === selectedProfession)?.icon || User, {
-                      className: "w-5 h-5 text-primary-600"
+                      className: "w-5 h-5 text-blue-600"
                     })}
-                    <span className="font-medium text-primary-700">
+                    <span className="font-medium text-blue-700">
                       {PROFESSIONS.find(p => p.id === selectedProfession)?.name}
                     </span>
-                    <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
@@ -459,22 +512,22 @@ export default function ChatInterface() {
                               setShowProfessionSelector(false)
                             }}
                             className={`w-full flex items-center gap-3 p-3 rounded-lg hover:bg-legal-50 transition-colors ${
-                              selectedProfession === profession.id ? 'bg-primary-50 border border-blue-200' : ''
+                              selectedProfession === profession.id ? 'bg-blue-50 border border-blue-200' : ''
                             }`}
                           >
                             {React.createElement(profession.icon, {
-                              className: `w-5 h-5 ${selectedProfession === profession.id ? 'text-primary-600' : 'text-legal-500'}`
+                              className: `w-5 h-5 ${selectedProfession === profession.id ? 'text-blue-600' : 'text-legal-500'}`
                             })}
                             <div className="text-left flex-1">
                               <div className={`font-medium text-sm ${
-                                selectedProfession === profession.id ? 'text-primary-700' : 'text-legal-700'
+                                selectedProfession === profession.id ? 'text-blue-700' : 'text-legal-700'
                               }`}>
                                 {profession.name}
                               </div>
                               <div className="text-xs text-legal-600">{profession.description}</div>
                             </div>
                             {selectedProfession === profession.id && (
-                              <div className="w-2 h-2 bg-primary-600 rounded-full"></div>
+                              <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
                             )}
                           </button>
                         ))}
@@ -584,6 +637,39 @@ export default function ChatInterface() {
           </div>
         )}
 
+        {/* Free access banner */}
+        {!session && messages.length > 0 && (
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 max-w-2xl mx-auto">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="font-medium text-green-900 mb-2">🎉 Tijdelijk geheel gratis!</h3>
+                <p className="text-sm text-green-700 mb-3">
+                  WetHelder is nu tijdelijk volledig gratis te gebruiken! Stel onbeperkt vragen. Maak een account aan voor aangepaste antwoorden op uw behoefte: <strong>Algemeen publiek, Advocaat, Politieagent, Rechter/Jurist of Ambtenaar</strong> + gesprekgeschiedenis.
+                </p>
+                <div className="flex gap-2">
+                  <Link
+                    href="/auth/signup"
+                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+                  >
+                    Account Aanmaken
+                  </Link>
+                  <Link
+                    href="/auth/signin"
+                    className="px-4 py-2 text-sm font-medium text-green-700 bg-white border border-green-300 hover:bg-green-50 rounded-lg transition-colors"
+                  >
+                    Inloggen
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {messages.map((message, index) => (
           <div
             key={index}
@@ -593,7 +679,7 @@ export default function ChatInterface() {
           >
             <div className="flex items-start gap-3">
               {message.role === 'assistant' && (
-                <Scale className="w-6 h-6 text-primary-600 flex-shrink-0 mt-1" />
+                <Scale className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
               )}
               <div className="flex-1">
                                  <div className="flex items-center gap-2 mb-2">
@@ -629,7 +715,7 @@ export default function ChatInterface() {
         {isLoading && (
           <div className="assistant-message chat-message">
             <div className="flex items-start gap-3">
-              <Scale className="w-6 h-6 text-primary-600 flex-shrink-0 mt-1 animate-pulse" />
+              <Scale className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1 animate-pulse" />
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="font-medium text-sm text-legal-700">WetHelder</span>
@@ -637,17 +723,17 @@ export default function ChatInterface() {
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-primary-600 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-primary-600 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                      <div className="w-2 h-2 bg-primary-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                     </div>
                     <span className="text-legal-600 text-sm font-medium">Zoeken in de Nederlandse wet- en regelgeving...</span>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-primary-50 to-legal-50 rounded-lg p-4 border border-blue-200">
+                  <div className="bg-gradient-to-r from-blue-50 to-legal-50 rounded-lg p-4 border border-blue-200">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2 text-xs text-legal-600">
-                        <div className="w-3 h-3 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                         <span className="font-medium">Analyseren van officiële bronnen</span>
                       </div>
                       <div className="text-xs text-legal-500 bg-white px-2 py-1 rounded">
@@ -658,7 +744,7 @@ export default function ChatInterface() {
                       📚 Bronnen: wetten.overheid.nl, officielebekendmakingen.nl
                     </div>
                     <div className="w-full bg-legal-200 rounded-full h-1">
-                      <div className="bg-primary-600 h-1 rounded-full animate-pulse" style={{width: '45%'}}></div>
+                      <div className="bg-blue-600 h-1 rounded-full animate-pulse" style={{width: '45%'}}></div>
                     </div>
                   </div>
                   
@@ -673,12 +759,54 @@ export default function ChatInterface() {
         )}
 
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <div className={`${
+            error.includes('maximum aantal gratis berichten')
+              ? 'bg-green-50 border border-green-200'
+              : 'bg-red-50 border border-red-200'
+          } rounded-lg p-4`}>
             <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-medium text-red-900">Fout</h3>
-                <p className="text-red-700 text-sm">{error}</p>
+              {error.includes('maximum aantal gratis berichten') ? (
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              ) : (
+                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              )}
+              <div className="flex-1">
+                <h3 className={`font-medium mb-2 ${
+                  error.includes('maximum aantal gratis berichten') ? 'text-green-900' : 'text-red-900'
+                }`}>
+                  {error.includes('maximum aantal gratis berichten') 
+                    ? '🎉 Volledig gratis te gebruiken!' 
+                    : 'Fout'
+                  }
+                </h3>
+                <p className={`text-sm mb-3 ${
+                  error.includes('maximum aantal gratis berichten') ? 'text-green-700' : 'text-red-700'
+                }`}>
+                  {error.includes('maximum aantal gratis berichten')
+                    ? 'WetHelder is tijdelijk geheel gratis! Er zou geen beperking moeten zijn. Probeer de pagina te verversen.'
+                    : error
+                  }
+                </p>
+                                 {error.includes('maximum aantal gratis berichten') && (
+                   <div className="flex gap-2">
+                     <Link
+                       href="/auth/signup"
+                       className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+                     >
+                       Account Aanmaken
+                     </Link>
+                     <Link
+                       href="/auth/signin"
+                       className="px-4 py-2 text-sm font-medium text-green-700 bg-white border border-green-300 hover:bg-green-50 rounded-lg transition-colors"
+                     >
+                       Inloggen
+                     </Link>
+                   </div>
+                 )}
               </div>
             </div>
           </div>
@@ -695,13 +823,13 @@ export default function ChatInterface() {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Stel uw juridische vraag..."
-            className="flex-1 px-4 py-3 border border-legal-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="flex-1 px-4 py-3 border border-legal-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={!inputValue.trim() || isLoading}
-            className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
           >
             <Send className="w-4 h-4" />
             <span>Verstuur</span>
@@ -718,6 +846,7 @@ export default function ChatInterface() {
           </div>
         </div>
       </form>
+      </div>
     </div>
   )
 } 

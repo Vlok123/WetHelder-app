@@ -502,8 +502,8 @@ export default function BoetesPage() {
                           </div>
                         )}
                         {message.role === 'user' && (
-                          <div className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                            <span className="text-sm font-medium text-primary-600">
+                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                            <span className="text-sm font-medium text-blue-600">
                               {session?.user?.name?.[0]?.toUpperCase() || 'U'}
                             </span>
                           </div>
@@ -512,14 +512,14 @@ export default function BoetesPage() {
                         <div className={`flex-1 ${message.role === 'user' ? 'text-right' : ''}`}>
                           <div className={`inline-block max-w-[85%] rounded-lg p-4 ${
                             message.role === 'user' 
-                              ? 'bg-gradient-to-r from-primary-100 to-primary-50 ml-8 border border-blue-200' 
+                              ? 'bg-gradient-to-r from-blue-100 to-blue-50 ml-8 border border-blue-200' 
                               : 'bg-legal-50 border border-legal-200'
                           }`}>
-                            <div className={`text-sm ${message.role === 'user' ? 'text-primary-800' : 'text-legal-800'}`}>
+                            <div className={`text-sm ${message.role === 'user' ? 'text-blue-800' : 'text-legal-800'}`}>
                               {message.role === 'assistant' ? formatMessage(message.content) : message.content}
                             </div>
                             <div className={`text-xs mt-2 ${
-                              message.role === 'user' ? 'text-primary-600' : 'text-legal-600'
+                              message.role === 'user' ? 'text-blue-600' : 'text-legal-600'
                             }`}>
                               {message.timestamp.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
                             </div>

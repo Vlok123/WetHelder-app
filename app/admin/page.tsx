@@ -73,7 +73,7 @@ export default function AdminDashboard() {
   if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen bg-legal-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     )
   }
@@ -87,7 +87,7 @@ export default function AdminDashboard() {
           <p className="text-legal-600 mb-6">Je moet ingelogd zijn om het admin dashboard te bekijken</p>
           <Link
             href="/auth/signin"
-            className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             Inloggen
           </Link>
@@ -138,7 +138,7 @@ export default function AdminDashboard() {
       <header className="bg-white shadow-sm border-b border-legal-200 p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <BarChart3 className="w-8 h-8 text-primary-600" />
+            <BarChart3 className="w-8 h-8 text-blue-600" />
             <div>
               <h1 className="text-2xl font-bold text-legal-900">Admin Dashboard</h1>
               <p className="text-legal-600 text-sm">Statistieken & Gebruikersbeheer</p>
@@ -164,7 +164,7 @@ export default function AdminDashboard() {
                     <p className="text-sm font-medium text-legal-600">Totaal Gebruikers</p>
                     <p className="text-3xl font-bold text-legal-900">{stats.totalUsers}</p>
                   </div>
-                  <Users className="w-8 h-8 text-primary-600" />
+                  <Users className="w-8 h-8 text-blue-600" />
                 </div>
               </div>
 
@@ -174,7 +174,7 @@ export default function AdminDashboard() {
                     <p className="text-sm font-medium text-legal-600">Conversaties</p>
                     <p className="text-3xl font-bold text-legal-900">{stats.totalConversations}</p>
                   </div>
-                  <MessageSquare className="w-8 h-8 text-primary-600" />
+                  <MessageSquare className="w-8 h-8 text-blue-600" />
                 </div>
               </div>
 
@@ -184,7 +184,7 @@ export default function AdminDashboard() {
                     <p className="text-sm font-medium text-legal-600">Totaal Berichten</p>
                     <p className="text-3xl font-bold text-legal-900">{stats.totalMessages}</p>
                   </div>
-                  <TrendingUp className="w-8 h-8 text-primary-600" />
+                  <TrendingUp className="w-8 h-8 text-blue-600" />
                 </div>
               </div>
 
@@ -195,7 +195,7 @@ export default function AdminDashboard() {
                     <p className="text-3xl font-bold text-legal-900">{stats.conversationsToday}</p>
                     <p className="text-xs text-legal-500">nieuwe gesprekken</p>
                   </div>
-                  <Calendar className="w-8 h-8 text-primary-600" />
+                  <Calendar className="w-8 h-8 text-blue-600" />
                 </div>
               </div>
             </div>
@@ -212,13 +212,13 @@ export default function AdminDashboard() {
                     return (
                       <div key={item.profession} className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <Icon className="w-5 h-5 text-primary-600" />
+                          <Icon className="w-5 h-5 text-blue-600" />
                           <span className="text-sm font-medium text-legal-700">{item.name}</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="w-24 bg-legal-200 rounded-full h-2">
                             <div 
-                              className="bg-primary-600 h-2 rounded-full" 
+                              className="bg-blue-600 h-2 rounded-full" 
                               style={{ width: `${percentage}%` }}
                             ></div>
                           </div>
@@ -236,15 +236,15 @@ export default function AdminDashboard() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center p-3 bg-legal-50 rounded-lg">
                     <span className="text-sm font-medium text-legal-700">Berichten deze week</span>
-                    <span className="text-lg font-bold text-primary-600">{stats.messagesThisWeek}</span>
+                    <span className="text-lg font-bold text-blue-600">{stats.messagesThisWeek}</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-legal-50 rounded-lg">
                     <span className="text-sm font-medium text-legal-700">Gem. berichten per gesprek</span>
-                    <span className="text-lg font-bold text-primary-600">{stats.averageMessagesPerConversation}</span>
+                    <span className="text-lg font-bold text-blue-600">{stats.averageMessagesPerConversation}</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-legal-50 rounded-lg">
                     <span className="text-sm font-medium text-legal-700">Gesprekken vandaag</span>
-                    <span className="text-lg font-bold text-primary-600">{stats.conversationsToday}</span>
+                    <span className="text-lg font-bold text-blue-600">{stats.conversationsToday}</span>
                   </div>
                 </div>
               </div>
@@ -273,7 +273,7 @@ export default function AdminDashboard() {
                           <td className="py-3 px-4 text-legal-600">{user.email}</td>
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-2">
-                              <Icon className="w-4 h-4 text-primary-600" />
+                              <Icon className="w-4 h-4 text-blue-600" />
                               <span className="text-legal-700">
                                 {PROFESSION_NAMES[user.profession as keyof typeof PROFESSION_NAMES]}
                               </span>

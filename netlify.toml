@@ -1,9 +1,10 @@
 [build]
-  command = "npm run build"
+  command = "npm run deploy"
   publish = ".next"
 
 [build.environment]
   NODE_VERSION = "18"
+  NPM_FLAGS = "--legacy-peer-deps"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
@@ -11,16 +12,23 @@
 [functions]
   directory = "netlify/functions"
 
-# Handle API routes
+# API Routes - Netlify Functions
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
 
-# Handle static files
+# Static assets
 [[redirects]]
   from = "/_next/static/*"
   to = "/_next/static/:splat"
+  status = 200
+  headers = {Cache-Control = "public, max-age=31536000, immutable"}
+
+# Images optimization
+[[redirects]]
+  from = "/_next/image*"
+  to = "/_next/image*"
   status = 200
 
 # Handle all other routes with Next.js

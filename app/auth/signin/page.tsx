@@ -53,7 +53,7 @@ export default function SignIn() {
     <div className="min-h-screen bg-legal-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <Scale className="mx-auto h-12 w-12 text-primary-600" />
+          <Scale className="mx-auto h-12 w-12 text-blue-600" />
           <h2 className="mt-6 text-3xl font-bold text-legal-900">
             Inloggen
           </h2>
@@ -77,7 +77,7 @@ export default function SignIn() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-legal-300 placeholder-legal-500 text-legal-900 rounded-lg focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
+                  className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-legal-300 placeholder-legal-500 text-legal-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                   placeholder="E-mailadres"
                 />
               </div>
@@ -96,7 +96,7 @@ export default function SignIn() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-legal-300 placeholder-legal-500 text-legal-900 rounded-lg focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
+                  className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-legal-300 placeholder-legal-500 text-legal-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                   placeholder="Wachtwoord"
                 />
               </div>
@@ -113,7 +113,7 @@ export default function SignIn() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Bezig met inloggen...' : 'Inloggen'}
             </button>
@@ -130,7 +130,7 @@ export default function SignIn() {
             <button
               type="button"
               onClick={handleGoogleSignIn}
-              className="group relative w-full flex justify-center py-3 px-4 border border-legal-300 text-sm font-medium rounded-lg text-legal-700 bg-white hover:bg-legal-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              className="group relative w-full flex justify-center py-3 px-4 border border-legal-300 text-sm font-medium rounded-lg text-legal-700 bg-white hover:bg-legal-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -145,7 +145,7 @@ export default function SignIn() {
           <div className="text-center">
             <p className="text-sm text-legal-600">
               Nog geen account?{' '}
-              <Link href="/auth/signup" className="font-medium text-primary-600 hover:text-primary-500">
+              <Link href="/auth/signup" className="font-medium text-blue-600 hover:text-blue-500">
                 Registreren
               </Link>
             </p>

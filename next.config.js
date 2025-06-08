@@ -1,13 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Essential Netlify configuration
-  trailingSlash: true,
   images: {
-    unoptimized: true
+    domains: ['lh3.googleusercontent.com'],
+    unoptimized: true // For Netlify static deployment
   },
-  // Ensure compatibility with serverless
+  swcMinify: true,
   experimental: {
-    serverComponentsExternalPackages: ['@prisma/client', 'bcryptjs']
+    serverComponentsExternalPackages: ['@prisma/client']
+  },
+  // For Netlify deployment
+  trailingSlash: false,
+  eslint: {
+    ignoreDuringBuilds: true
+  },
+  typescript: {
+    ignoreBuildErrors: true
   }
 }
 

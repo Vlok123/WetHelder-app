@@ -18,7 +18,7 @@
   }
   
   .user-message {
-    @apply bg-gradient-to-r from-primary-100 to-primary-50 ml-8 border border-blue-200;
+    @apply bg-gradient-to-r from-blue-100 to-blue-50 ml-8 border border-blue-200;
   }
   
   .assistant-message {
@@ -26,12 +26,12 @@
   }
   
   .law-reference {
-    @apply bg-legal-50 border-l-4 border-primary-500 rounded-r-lg shadow-sm;
+    @apply bg-legal-50 border-l-4 border-blue-500 rounded-r-lg shadow-sm;
   }
   
   /* Enhanced formatting for structured content */
   .assistant-message h2 {
-    @apply text-xl font-bold text-legal-800 mt-5 mb-3 border-b-2 border-primary-500 pb-2;
+    @apply text-xl font-bold text-legal-800 mt-5 mb-3 border-b-2 border-blue-500 pb-2;
   }
   
   .assistant-message h3 {
@@ -60,11 +60,11 @@
   
   /* Law reference styling */
   .law-reference {
-    @apply my-3 p-3 bg-legal-50 border-l-4 border-primary-500 rounded-r-lg;
+    @apply my-3 p-3 bg-legal-50 border-l-4 border-blue-500 rounded-r-lg;
   }
   
   .law-reference strong {
-    @apply text-primary-700;
+    @apply text-blue-700;
   }
   
   /* Formatted content styling */
@@ -73,7 +73,7 @@
   }
   
   .formatted-content h2 {
-    @apply text-xl font-bold text-legal-800 mt-6 mb-4 border-b-2 border-primary-500 pb-2 first:mt-0;
+    @apply text-xl font-bold text-legal-800 mt-6 mb-4 border-b-2 border-blue-500 pb-2 first:mt-0;
   }
   
   .formatted-content h3 {
@@ -101,10 +101,10 @@
   }
   
   .formatted-content .law-reference {
-    @apply my-4 p-4 bg-gradient-to-r from-legal-50 to-primary-50 border-l-4 border-primary-500 rounded-r-lg shadow-sm;
+    @apply my-4 p-4 bg-gradient-to-r from-legal-50 to-blue-50 border-l-4 border-blue-500 rounded-r-lg shadow-sm;
   }
   
   .formatted-content a {
-    @apply text-primary-600 hover:text-primary-800 underline font-medium transition-colors;
+    @apply text-blue-600 hover:text-blue-800 underline font-medium transition-colors;
   }
 } 
