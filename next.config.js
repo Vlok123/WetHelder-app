@@ -4,10 +4,7 @@ const nextConfig = {
     domains: ['lh3.googleusercontent.com'],
     unoptimized: true
   },
-  swcMinify: true,
-  experimental: {
-    serverComponentsExternalPackages: ['@prisma/client']
-  },
+  serverExternalPackages: ['@prisma/client'],
   // Optimize for faster builds
   compiler: {
     removeConsole: process.env.NODE_ENV === "production"
