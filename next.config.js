@@ -2,11 +2,15 @@
 const nextConfig = {
   images: {
     domains: ['lh3.googleusercontent.com'],
-    unoptimized: true // For Netlify static deployment
+    unoptimized: true
   },
   swcMinify: true,
   experimental: {
     serverComponentsExternalPackages: ['@prisma/client']
+  },
+  // Optimize for faster builds
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production"
   },
   // For Netlify deployment
   trailingSlash: false,
